@@ -16,7 +16,7 @@ WORKDIR /app
 # 修正ポイント: 
 # 1. ワイルドカードを避け、生成されるファイル名を特定する
 # 2. または、コピー先をファイル名ではなくディレクトリ (./) にする
-COPY --from=build /build/target/app-name-0.0.1-SNAPSHOT.jar ./app.jar
+COPY --from=build /build/target/learning_app-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
