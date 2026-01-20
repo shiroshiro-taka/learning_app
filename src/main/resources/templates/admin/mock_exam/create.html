@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模擬試験登録</title>
+    <!-- Tailwind CSS CDNを読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwindのカスタム設定 (他の画面と共通化)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
+                        'primary-blue-hover': '#1747a5',
+                        'success-green': '#10b981', // 登録ボタンの緑
+                        'gray-button': '#6b7280',   // 戻るボタンの灰色
+                        'error-red': '#ef4444',     // エラー表示や削除ボタンの赤
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+    <!-- メインコンテナ -->
+    <div class="max-w-4xl mx-auto w-full">
+        
+        <!-- ヘッダー -->
+        <header class="mb-6 md:mb-8 border-b border-gray-200 pb-4 flex justify-between items-center">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">
+                模擬試験登録
+            </h1>
+            <a href="/admin/mock_exam/list" class="text-gray-button hover:text-gray-600 font-medium flex items-center transition duration-150">
+                一覧に戻る
+            </a>
+        </header>
+
+        <!-- エラーメッセージ -->
+        <div th:if="${errorMessage}" class="p-4 mb-6 bg-red-100 border-l-4 border-error-red text-error-red font-bold rounded-lg shadow-md">
+            <p th:text="${errorMessage}"></p>
+        </div>
+
+        <!-- フィルタリングエリア -->
+        <div class="filter-area bg-white p-6 rounded-xl shadow-lg border border-gray-100 mb-8">
+            <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">出題問題の絞り込み</h3>
+            <form th:action="@{/admin/mock_exam/create}" method="get" class="space-y-4">
+                <!-- 登録フォームの既存データをHiddenで保持 -->
+                <input type="hidden" name="examName" th:value="${examName}">
+                <input type="hidden" name="durationMinutes" th:value="${durationMinutes}">
+                <input type="hidden" name="questionCount" th:value="${questionCount}">
+                <input type="hidden" name="description" th:value="${description}">
+                
+                <div class="flex items-center space-x-4">
+                    <label for="category-id" class="text-sm font-medium text-gray-700 whitespace-nowrap">カテゴリ：</label>
+                    <select id="category-id" name="categoryId"
+                            class="block w-full px-3 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue sm:text-sm">
+                        <option th:value="''" th:text="'すべて'" 
+                                th:selected="${categoryId == null}">
+                        </option>
+                        <option th:each="c : ${categories}" 
+                                th:value="${c.id}" 
+                                th:text="${c.name}" 
+                                th:selected="${categoryId != null and #strings.toString(categoryId) == #strings.toString(c.id)}">
+                        </option>
+                    </select>
+
+                    <button type="submit" 
+                            class="px-4 py-2 bg-primary-blue text-white font-semibold rounded-lg shadow-md hover:bg-primary-blue-hover transition duration-200 flex-shrink-0">
+                        絞り込み
+                    </button>
+                    <a th:href="@{/admin/mock_exam/create}" 
+                       class="px-4 py-2 text-primary-blue hover:text-primary-blue-hover transition duration-200 border border-primary-blue rounded-lg bg-white flex-shrink-0">
+                        解除
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- メイン登録フォーム -->
+        <div class="bg-white p-6 md:p-8 rounded-xl shadow-2xl border-t-8 border-success-green">
+            <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">模擬試験情報</h3>
+            <form th:action="@{/admin/mock_exam/create}" method="post" class="space-y-6">
+                
+                <!-- Hidden Field for Category Filter State -->
+                <input type="hidden" name="categoryId" th:value="${categoryId}">
+
+                <!-- 試験名 -->
+                <div>
+                    <label for="exam-name" class="block text-sm font-medium text-gray-700 mb-1">試験名：</label>
+                    <input type="text" id="exam-name" name="examName" th:value="${examName}" required
+                           class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue sm:text-sm">
+                </div>
+
+                <!-- 試験時間 & 問題数 (Flex Layout) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="duration-minutes" class="block text-sm font-medium text-gray-700 mb-1">試験時間（分）：</label>
+                        <input type="number" id="duration-minutes" name="durationMinutes" th:value="${durationMinutes}" required min="1"
+                               class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="question-count" class="block text-sm font-medium text-gray-700 mb-1">問題数：</label>
+                        <input type="number" id="question-count" name="questionCount" th:value="${questionCount}" required min="1"
+                               class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue sm:text-sm">
+                    </div>
+                </div>
+
+                <!-- 説明 -->
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">説明：</label>
+                    <textarea id="description" name="description" rows="3"
+                              class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue sm:text-sm"
+                              th:text="${description}"></textarea>
+                </div>
+                
+                <!-- 出題問題選択 -->
+                <h3 class="text-xl font-semibold text-gray-700 pt-4 border-t mt-6">出題問題選択</h3>
+                
+                <!-- 問題一覧テーブル -->
+                <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="w-1/12 px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">選択</th>
+                                <th scope="col" class="w-2/12 px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">問題ID</th>
+                                <th scope="col" class="w-9/12 px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">分野（カテゴリ）</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr th:each="q : ${questions}" class="hover:bg-gray-50 transition duration-150">
+                                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
+                                    <input type="checkbox" name="questionIds" th:value="${q.id}" 
+                                           th:checked="${selectedQuestionIds != null ? selectedQuestionIds.contains(q.id) : false}"
+                                           class="h-4 w-4 text-primary-blue border-gray-300 rounded focus:ring-primary-blue">
+                                </td>
+                                <td th:text="${q.id}" class="px-4 py-2 whitespace-nowrap text-sm font-mono text-gray-700"></td>
+                                <td th:text="${q.category != null} ? ${q.category.name} : '未設定'" 
+                                    class="px-4 py-2 whitespace-nowrap text-sm text-primary-blue font-medium"></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(questions)}">
+                                <td colspan="3" class="px-4 py-4 text-center text-sm text-gray-500">該当する問題がありません。</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 登録ボタン -->
+                <div class="pt-6 text-right">
+                    <button type="submit" 
+                            class="px-6 py-2 rounded-lg font-semibold text-white bg-success-green hover:bg-green-600 transition duration-200 shadow-xl">
+                        登録
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+    </div>
+</body>
+</html>

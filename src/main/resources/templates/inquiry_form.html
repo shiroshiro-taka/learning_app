@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お問い合わせ</title>
+    <!-- Tailwind CSS CDNを読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwindのカスタム設定 (他の画面と共通化)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
+                        'primary-blue-hover': '#1747a5',
+                        'success-green': '#10b981', // 送信ボタンの緑
+                        'gray-button': '#6b7280',   // 戻るボタンの灰色
+                        'error-red': '#ef4444',     // エラー表示の赤
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+	<script>
+	    /**
+	     * 「返信希望」選択によってメール必須を切り替える
+	     */
+	    function toggleEmailRequired() {
+	        const replyYes = document.getElementById('replyYes');
+	        const emailInput = document.getElementById('email');
+            
+            // 初回ロード時にも実行されるように設定
+            if (replyYes) {
+	            if (replyYes.checked) {
+	                emailInput.required = true;
+	                emailInput.placeholder = "返信をご希望の場合は必須です";
+	            } else {
+	                emailInput.required = false;
+	                emailInput.placeholder = "example@example.com (任意)";
+	            }
+            } else {
+                // replyYesがない場合の初期設定
+                emailInput.placeholder = "example@example.com (任意)";
+            }
+	    }
+
+        // ページロード時に実行
+        document.addEventListener('DOMContentLoaded', toggleEmailRequired);
+	</script>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8 flex items-start justify-center">
+
+    <!-- メインコンテナ -->
+    <div class="w-full max-w-lg bg-white p-6 md:p-10 rounded-xl shadow-2xl border-t-8 border-primary-blue">
+        
+        <!-- タイトル -->
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-3 text-center">
+            お問い合わせフォーム
+        </h1>
+        
+        <!-- エラーメッセージ -->
+        <div th:if="${error != null}" class="p-4 mb-6 bg-red-100 border-l-4 border-error-red text-error-red font-bold rounded-lg shadow-md">
+            <p th:text="${error}"></p>
+        </div>
+
+        <!-- フォーム -->
+        <form th:action="@{/inquiry/submit}" method="post" th:object="${inquiry}" class="space-y-6">
+            
+            <!-- ユーザー名 (表示のみ) -->
+            <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p class="text-sm font-medium text-gray-700">ユーザー名：<span th:text="*{username}" class="font-semibold text-gray-900 ml-2"></span></p>
+            </div>
+	
+            <!-- お問い合わせの種類 -->
+            <div>
+                <label for="category" class="block text-sm font-medium text-gray-700 mb-1">お問い合わせの種類：<span class="text-error-red">*</span></label>
+                <select id="category" th:field="*{category}" required
+                        class="mt-1 block w-full px-4 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue sm:text-sm">
+                    <option value="">選択してください</option>
+                    <option value="不具合報告">不具合報告</option>
+                    <option value="誤字・脱字報告">誤字・脱字報告</option>
+                    <option value="機能改善の提案">機能改善の提案</option>
+                    <option value="その他">その他</option>
+                </select>
+            </div>
+	  
+            <!-- 返信希望 -->
+            <div>
+                <p class="block text-sm font-medium text-gray-700 mb-1">返信希望：</p>
+                <div class="mt-2 flex items-center space-x-6">
+                    <label class="inline-flex items-center">
+                        <input type="radio" id="replyYes" name="replyWanted" th:field="*{replyWanted}" value="true" onchange="toggleEmailRequired()"
+                               class="h-4 w-4 text-primary-blue border-gray-300 focus:ring-primary-blue">
+                        <span class="ml-2 text-sm text-gray-700">する</span>
+                    </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" id="replyNo" name="replyWanted" th:field="*{replyWanted}" value="false" onchange="toggleEmailRequired()" 
+                               class="h-4 w-4 text-primary-blue border-gray-300 focus:ring-primary-blue">
+                        <span class="ml-2 text-sm text-gray-700">しない</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- メールアドレス -->
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">メールアドレス：</label>
+                <input type="email" id="email" th:field="*{email}" 
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue sm:text-sm"
+                       placeholder="example@example.com (任意)">
+            </div>
+	
+            <!-- お問い合わせ内容 -->
+            <div>
+                <label for="message" class="block text-sm font-medium text-gray-700 mb-1">お問い合わせ内容：<span class="text-error-red">*</span></label>
+                <textarea id="message" th:field="*{message}" rows="5" required
+                          class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue sm:text-sm"
+                          placeholder="具体的な内容を記入してください"></textarea>
+            </div>
+            
+            <!-- 送信ボタン -->
+            <div class="pt-4 text-right">
+                <button type="submit" 
+                        class="px-6 py-2 rounded-lg font-semibold text-white bg-success-green hover:bg-green-600 transition duration-200 shadow-md">
+                    送信
+                </button>
+            </div>
+        </form>
+
+        <!-- ホームに戻るリンク -->
+        <div class="mt-6 border-t pt-4 text-center">
+            <a th:href="@{/home}" class="text-gray-button hover:text-gray-600 font-medium flex items-center justify-center transition duration-150">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                ホームへ戻る
+            </a>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お問い合わせ一覧 (管理)</title>
+    <!-- Tailwind CSS CDNを読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwindのカスタム設定 (他の画面と共通化)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
+                        'primary-blue-hover': '#1747a5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* テーブルの列幅の柔軟な制御と、内容の表示制限 */
+        .clamp-text {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* 2行に制限 */
+            -webkit-box-orient: vertical;
+            word-break: break-word;
+        }
+        /* 列幅のヒント (横スクロール前提) */
+        .col-id { width: 50px; }
+        .col-username { width: 100px; }
+        .col-email { width: 150px; }
+        .col-reply { width: 80px; }
+        .col-category { width: 100px; }
+        .col-message { min-width: 300px; max-width: 400px; }
+        .col-date { width: 150px; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+    <!-- メインコンテナ -->
+    <div class="max-w-full mx-auto w-full">
+        
+        <!-- ヘッダーとナビゲーション -->
+        <header class="mb-6 md:mb-8 border-b border-gray-200 pb-4 flex justify-between items-center">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">
+                お問い合わせ一覧 (管理)
+            </h1>
+            <a th:href="@{/home}" class="text-primary-blue hover:text-primary-blue-hover font-medium flex items-center transition duration-150">
+                ホームに戻る
+            </a>
+        </header>
+
+        <!-- お問い合わせ一覧テーブル -->
+        <div class="bg-white shadow-xl rounded-xl overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th scope="col" class="col-id px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">ID</th>
+                        <th scope="col" class="col-username px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">ユーザー名</th>
+                        <th scope="col" class="col-email px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">メール</th>
+                        <th scope="col" class="col-reply px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">返信希望</th>
+                        <th scope="col" class="col-category px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">種類</th>
+                        <th scope="col" class="col-message px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">内容</th>
+                        <th scope="col" class="col-date px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">日時</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr th:each="inq : ${inquiries}" class="hover:bg-gray-50 transition duration-150">
+                        <td th:text="${inq.id}" class="col-id px-6 py-4 whitespace-nowrap text-sm text-gray-900"></td>
+                        <td th:text="${inq.username}" class="col-username px-6 py-4 text-sm font-medium text-gray-900"></td>
+                        <td th:text="${inq.email}" class="col-email px-6 py-4 text-sm text-gray-600"></td>
+                        <td th:classappend="${inq.replyWanted} ? 'text-error-red font-semibold' : 'text-gray-500'" 
+                            th:text="${inq.replyWanted} ? 'する' : 'しない'" 
+                            class="col-reply px-6 py-4 whitespace-nowrap text-sm text-center"></td>
+                        <td th:text="${inq.category}" class="col-category px-6 py-4 whitespace-nowrap text-sm text-primary-blue font-medium"></td>
+                        <td class="col-message px-6 py-4 text-sm text-gray-800">
+                            <!-- 内容はclamp-textで2行に制限 -->
+                            <div th:text="${inq.message}" class="clamp-text"></div>
+                        </td>
+                        <td th:text="${#temporals.format(inq.createdAt, 'yyyy-MM-dd HH:mm')}" class="col-date px-6 py-4 whitespace-nowrap text-sm text-gray-500"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+    </div>
+</body>
+</html>

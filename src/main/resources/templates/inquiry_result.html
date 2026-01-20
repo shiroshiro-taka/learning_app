@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>送信完了</title>
+    <!-- Tailwind CSS CDNを読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwindのカスタム設定 (他の画面と共通化)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
+                        'primary-blue-hover': '#1747a5',
+                        'success-green': '#10b981', // 成功メッセージのアクセント
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8 flex items-center justify-center">
+
+    <!-- メインコンテナ (成功メッセージカード) -->
+    <div class="w-full max-w-md bg-white p-8 md:p-12 rounded-xl shadow-2xl border-t-8 border-success-green text-center">
+        
+        <!-- 成功アイコン -->
+        <div class="mb-6 flex justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-success-green" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+        </div>
+
+        <!-- メッセージ -->
+        <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6" th:text="${message}">お問い合わせを送信しました。</h2>
+        <p class="text-gray-600 mb-8">
+            内容を確認後、必要に応じてご連絡いたします。ありがとうございました。
+        </p>
+
+        <!-- ホームへ戻るボタン -->
+        <a th:href="@{/home}" 
+           class="inline-flex items-center px-6 py-3 rounded-lg font-semibold text-white bg-primary-blue hover:bg-primary-blue-hover transition duration-200 shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+            </svg>
+            ホームへ戻る
+        </a>
+
+    </div>
+</body>
+</html>

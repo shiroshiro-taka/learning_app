@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title th:text="${exam?.examName} + ' - 試験開始'">模擬試験</title>
+<!-- Tailwind CSS CDNを読み込み -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    // Tailwindのカスタム設定
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'primary-blue': '#1c55c8', // ボタンやアクセント用の青
+                    'primary-blue-hover': '#1747a5',
+                    'success-green': '#10b981', // 解答済みの緑
+                    'error-red': '#ef4444',     // 終了ボタンの赤
+                    'accent-yellow': '#facc15', // 現在の問題の黄色
+                    'dark-panel': '#2d3748',    // コントロールパネルの背景 (gray-800相当)
+                },
+                fontFamily: {
+                    sans: ['Inter', 'sans-serif'],
+                },
+            }
+        }
+    }
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+<style>
+  /* 全体レイアウト */
+  body { 
+    display: flex;
+    flex-direction: column; 
+    height: 100vh; 
+  }
+  
+  /* DBの改行・空白を保持するCSS */
+  .preserve-format {
+    white-space: pre-wrap;
+  }
+
+  /* highlight.jsが適用するコードブロック全体 */
+  .hljs {
+      padding: 0.75em;
+      background: #f3f3f3;
+      border-radius: 0.5rem;
+      line-height: 1.4;
+      overflow-x: auto;
+  }
+
+  /* 選択肢が選択されたときのスタイル (selected) */
+  .selected { 
+      background-color: #eff6ff; /* blue-50 */
+      border: 1px solid #93c5fd; /* blue-300 */
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* 解答状況ボタンのスタイル */
+  .q-status-btn { 
+    position: relative;
+    transition: background-color 0.1s;
+  }
+  .status-answered { background-color: #10b981 !important; } /* success-green */
+  .status-current { background-color: #facc15 !important; border: 2px solid #2d3748 !important; color: #2d3748 !important; } /* accent-yellow */
+  .status-review::before { 
+    content: "📌"; 
+    position: absolute; top: -8px; right: -8px; 
+    font-size: 1rem; color: #1c55c8; /* primary-blue */
+    line-height: 1;
+    text-shadow: 0 0 2px rgba(0,0,0,0.5);
+  }
+
+  /* 試験終了ボタンのフォームマージン調整 */
+  #finishForm { margin: 0; }
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body class="bg-gray-100">
+
+<!-- ヘッダーバー (固定) -->
+<div class="header-bar sticky top-0 z-10 flex flex-col md:flex-row justify-between items-center px-4 md:px-8 py-3 border-b-4 border-gray-300 bg-white shadow-md">
+    <h1 class="exam-title text-xl md:text-2xl font-bold text-gray-800 mb-2 md:mb-0" th:text="'模擬試験：' + ${exam.examName}">模擬試験名：模擬試験名</h1>
+    
+    <div id="timer-display" class="flex items-center space-x-2 text-xl md:text-2xl font-extrabold text-error-red">
+        <!-- ⌛ アイコンを追加 -->
+        <span>⌛</span>
+        <span class="timer-text">残り時間: <span id="timer">--:--</span></span>
+    </div>
+</div>
+
+<!-- 問題表示エリア (スクロール可能) -->
+<div class="question-main flex-grow overflow-y-auto p-4 md:p-8 max-w-5xl mx-auto w-full">
+    <div id="question-container">
+        <div th:each="q, iterStat : ${examQuestions}" 
+             class="question bg-white rounded-xl shadow-lg p-6 md:p-8 mb-6" 
+             th:id="'q-'+${q.question.id}" 
+             th:data-index="${iterStat.index}"
+             th:data-question-id="${q.question.id}">
+            
+            <div class="question-header flex items-start mb-4 pb-3 border-b border-gray-200">
+                <span class="question-number text-2xl font-extrabold text-primary-blue mr-4 flex-shrink-0" th:text="'問' + ${iterStat.count}">問1</span>
+                <div class="question-text text-lg font-semibold text-gray-800 preserve-format" th:utext="${q.question.questionText}">問題文テキスト</div>
+            </div>
+
+            <div class="choice-group space-y-3">
+                <div th:each="c, cStat : ${q.question.choices}" 
+                     class="choice cursor-pointer p-3 md:p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition duration-150 flex items-start"
+                     th:data-choice-id="${c.id}">
+                    <input type="radio" 
+                           th:id="'q' + ${q.question.id} + 'c' + ${c.id}" 
+                           th:name="'q' + ${q.question.id}" 
+                           th:data-question-id="${q.question.id}"
+                           th:value="${c.id}"
+                           class="choice-radio mt-1 w-5 h-5 text-primary-blue focus:ring-primary-blue border-gray-300 flex-shrink-0">
+                    <label th:for="'q' + ${q.question.id} + 'c' + ${c.id}" 
+                           th:utext="${c.choiceText}"
+                           class="ml-3 text-base text-gray-700 w-full cursor-pointer">選択肢テキスト</label>
+                </div>
+            </div>
+            
+            <div class="review-checkbox-container mt-6 pt-4 border-t border-dashed border-gray-300 text-sm flex items-center">
+                 <input type="checkbox" th:id="'review-' + ${q.question.id}" class="review-check w-4 h-4 text-primary-blue rounded focus:ring-primary-blue border-gray-300">
+                 <label th:for="'review-' + ${q.question.id}" class="ml-2 text-gray-600 font-medium cursor-pointer">後で見直すためにチェックする</label>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- フッター/コントロールパネル (固定) -->
+<div class="control-panel sticky bottom-0 z-10 bg-dark-panel p-4 shadow-2xl flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 w-full">
+    
+    <!-- 解答状況パネル -->
+    <div id="answer-status-panel" class="flex flex-wrap justify-center sm:justify-start max-w-md">
+        <!-- ボタンは二重クリックで移動できることを明示 -->
+<!--        <p class="text-xs text-gray-400 w-full mb-1 text-center sm:text-left">解答状況 (ダブルクリックで移動)</p>-->
+        <div th:each="q, iterStat : ${examQuestions}" 
+             class="q-status-btn w-8 h-8 m-1 bg-gray-600 text-white text-sm font-semibold rounded-md flex items-center justify-center cursor-pointer hover:bg-gray-500 transition duration-150" 
+             th:data-index="${iterStat.index}"
+             th:text="${iterStat.count}"
+             th:title="'問' + ${iterStat.count}"
+             ondblclick="showQuestion([[${iterStat.index}]]);"> </div>
+    </div>
+
+    <!-- ナビゲーションボタン -->
+    <div class="nav-buttons flex space-x-3">
+        <button id="prev" type="button" class="px-5 py-2 rounded-lg font-bold text-white bg-primary-blue hover:bg-primary-blue-hover disabled:bg-gray-500 disabled:cursor-not-allowed transition duration-150 shadow-md">
+            &larr; 前の問題へ
+        </button>
+        <button id="next" type="button" class="px-5 py-2 rounded-lg font-bold text-white bg-primary-blue hover:bg-primary-blue-hover disabled:bg-gray-500 disabled:cursor-not-allowed transition duration-150 shadow-md">
+            次の問題へ &rarr;
+        </button>
+    </div>
+
+    <!-- アクションボタン -->
+    <!-- space-x-3 を space-x-5 に変更して間隔を広げました -->
+    <div class="control-actions flex space-x-5">
+        <button id="review-list-btn" type="button" class="px-5 py-2 rounded-lg font-bold text-white bg-accent-yellow hover:bg-yellow-600 transition duration-150 shadow-md">
+            解答見直し
+        </button>
+        <form th:action="@{/exam/finish}" method="post" id="finishForm">
+            <input type="hidden" name="userExamId" id="userExamIdInput" th:value="${userExamId != null ? userExamId : 0}" />
+            <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit" id="finish-exam-btn" class="px-5 py-2 rounded-lg font-bold text-white bg-error-red hover:bg-red-600 transition duration-150 shadow-md">
+                試験終了
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<script th:inline="javascript">
+/*<![CDATA[*/
+// **コントローラーから渡されたデータ**
+let duration = /*[[${exam.durationMinutes}]]*/ 60; // 模擬試験時間（分）
+let userExamId = /*[[${userExamId}]]*/ 0; // UserMockExamのID
+let questionsCount = /*[[${examQuestions.size()}]]*/ 0; // 全問題数
+let initialQuestionIndex = /*[[${initialQuestionIndex}]]*/ 0; // 初期表示インデックス
+let mockExamId = /*[[${exam.id}]]*/ 0; // MockExamのIDを取得 (見直し画面遷移用)
+
+let existingAnswers = /*[[${existingAnswers}]]*/ []; 
+
+// 問題IDとインデックスをマッピングするための配列
+let questionsData = []; 
+/*[# th:each="q, iterStat : ${examQuestions}"]*/
+questionsData.push({ id: /*[[${q.question.id}]]*/ 0, index: /*[[${iterStat.index}]]*/ 0 });
+/*[/]*/
+
+// **状態管理変数**
+let totalSeconds = duration * 60;
+let currentQuestionIndex = 0; 
+let timerInterval; 
+
+// **解答状況のローカルキャッシュ (Ajaxでの更新を反映させる)**
+// key: questionId, value: { answered: true/false, review: true/false, choiceId: Long }
+let answerStatus = {}; 
+
+// **タイマー処理**
+function updateTimer() {
+    let minutes = Math.floor(totalSeconds / 60);
+    let seconds = totalSeconds % 60;
+    let timeString = String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+    $('#timer').text(timeString);
+    
+    if (totalSeconds <= 0) {
+        clearInterval(timerInterval);
+        console.warn('試験時間が終了しました。自動的に終了処理を実行します。');
+        // 自動提出を実行する前に、確認モーダル（カスタム実装が必要）を表示するのが理想的だが、今回は即時実行
+        $('#finishForm').submit(); 
+    } else {
+        totalSeconds--;
+    }
+}
+
+// **解答状況パネルの更新**
+function updateStatusPanel() {
+    $('.q-status-btn').each(function(index) {
+        let isCurrent = index === currentQuestionIndex;
+        let questionId = questionsData[index].id;
+        let status = answerStatus[questionId] || { answered: false, review: false };
+
+        $(this).toggleClass('status-current', isCurrent);
+        $(this).toggleClass('status-answered', status.answered);
+        $(this).toggleClass('status-review', status.review);
+    });
+}
+
+// **問題表示処理**
+function showQuestion(index) {
+    if (index < 0 || index >= questionsCount) {
+        return;
+    }
+
+    $('.question').hide();
+    let targetQuestion = $('#question-container .question').eq(index);
+    targetQuestion.show();
+    
+    currentQuestionIndex = index;
+    
+    $('#prev').prop('disabled', currentQuestionIndex === 0);
+    $('#next').prop('disabled', currentQuestionIndex === questionsCount - 1);
+    
+    updateStatusPanel();
+    
+    restoreAnswerState(questionsData[index].id);
+}
+
+// **解答状態の復元 (画面遷移時)**
+function restoreAnswerState(questionId) {
+    let status = answerStatus[questionId] || {};
+    
+    $('#q-'+questionId).find('.choice').removeClass('selected');
+    $('#q-'+questionId).find('.choice-radio').prop('checked', false);
+    
+    // status.choiceIdが存在し、かつ0より大きい（有効なID）の場合に復元
+    if (status.answered && status.choiceId != null && status.choiceId > 0) {
+        let radio = $('#q'+questionId+'c'+status.choiceId);
+        radio.prop('checked', true);
+        radio.closest('.choice').addClass('selected');
+    }
+    
+    // 見直しチェックボックスの復元
+    $('#review-' + questionId).prop('checked', status.review);
+}
+
+
+// **Ajaxで回答送信（CSRF対応）**
+function sendAnswerAjax(questionId, choiceId, reviewFlag, isReviewToggle = false) {
+    // Thymeleafが自動挿入するCSRFトークンを取得
+    let csrfToken = /*[[${_csrf.token}]]*/ '';
+    let csrfHeader = /*[[${_csrf.headerName}]]*/ 'X-CSRF-TOKEN'; 
+    
+    // choiceIdがnullまたは0の場合、未解答として扱う
+    let finalChoiceId = choiceId; 
+    
+    $.ajax({
+        url: '/exam/answer',
+        type: 'POST',
+        data: {
+            userExamId: userExamId,
+            questionId: questionId,
+            choiceId: finalChoiceId, 
+            reviewFlag: reviewFlag
+        },
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader(csrfHeader, csrfToken); 
+        },
+        success: function(){
+            let status = answerStatus[questionId] || {};
+            
+            // finalChoiceIdがnullまたは0の場合、未解答と判断
+            let isAnswered = (finalChoiceId != null && finalChoiceId > 0); 
+
+            if (!isReviewToggle) {
+                // 通常の回答時
+                status.answered = isAnswered; 
+                status.choiceId = isAnswered ? finalChoiceId : null; 
+            }
+            // 見直しフラグは常に最新を反映
+            status.review = reviewFlag; 
+            
+            answerStatus[questionId] = status;
+            updateStatusPanel();
+        },
+        error: function(xhr){
+            console.error('Ajax Error: 回答の保存に失敗しました。', xhr.responseText);
+        }
+    });
+}
+
+// **選択肢クリック**
+$(document).on('change', '.choice-radio', function() {
+    let questionId = $(this).data('question-id');
+    let choiceId = $(this).val(); 
+    let reviewChecked = $('#review-' + questionId).is(':checked');
+    
+    // 選択状態の切り替え (UI)
+    $('#q-'+questionId).find('.choice').removeClass('selected');
+    $(this).closest('.choice').addClass('selected');
+
+    sendAnswerAjax(questionId, choiceId, reviewChecked);
+});
+
+// **見直しチェックボックス**
+$(document).on('change', '.review-check', function() {
+    let questionId = $(this).closest('.question').data('question-id');
+    let reviewFlag = $(this).is(':checked');
+    
+    let selectedChoiceId = $('#q-'+questionId).find('.choice-radio:checked').val() || null;
+    
+    if (selectedChoiceId === "") {
+        selectedChoiceId = null;
+    }
+    
+    // 見直しチェックの変更は isReviewToggle=true で送信
+    sendAnswerAjax(questionId, selectedChoiceId, reviewFlag, true);
+});
+
+// **ナビゲーションボタン**
+$('#prev').click(function() {
+    showQuestion(currentQuestionIndex - 1);
+});
+
+$('#next').click(function() {
+    showQuestion(currentQuestionIndex + 1);
+});
+
+// **解答見直し画面への遷移**
+$('#review-list-btn').click(function() {
+    if (mockExamId > 0) {
+        // MockExam ID を使用して、見直し画面へ遷移
+        window.location.href = '/exam/review/' + mockExamId;
+    } else {
+        console.error('Mock Exam ID is missing. Cannot navigate to review.');
+    }
+});
+
+// **既存の解答状況をローカルキャッシュに初期設定する**
+function initializeAnswerStatus(answerDtos) {
+    answerDtos.forEach(function(answerDto) {
+        let questionId = answerDto.questionId; 
+        let selectedChoiceId = answerDto.selectedChoiceId;
+        
+        // selectedChoiceIdがnullまたは0の場合、未解答と判断
+        let answered = (selectedChoiceId != null && selectedChoiceId > 0); 
+
+        if (questionId) {
+             answerStatus[questionId] = { 
+                answered: answered, 
+                review: answerDto.reviewFlag, // DTOから直接取得
+                choiceId: selectedChoiceId
+            };
+        }
+    });
+}
+
+// **初期化処理**
+$(document).ready(function() {
+    // 1. 既存の解答状況をローカルキャッシュに読み込む
+    initializeAnswerStatus(existingAnswers); 
+    
+    // 2. タイマーを開始
+    if (totalSeconds > 0) {
+        updateTimer(); 
+        timerInterval = setInterval(updateTimer, 1000);
+    }
+    
+    // 3. 最初の問題を表示
+    if (questionsCount > 0) {
+        showQuestion(initialQuestionIndex); 
+    } else {
+        $('#question-container').html('<p class="text-center text-lg p-8 text-gray-600">この試験にはまだ問題が登録されていません。</p>');
+    }
+    
+    // 4. コードハイライト処理
+    hljs.highlightAll();
+});
+/*]]>*/
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+
+</body>
+</html>

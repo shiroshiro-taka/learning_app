@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.id != null} ? 'ユーザー編集' : '新規ユーザー登録'">ユーザー登録・編集</title>
+    <!-- Tailwind CSS CDNを読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwindのカスタム設定 (他の画面と共通化)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
+                        'primary-blue-hover': '#1747a5',
+                        'success-green': '#10b981', // 保存ボタンの緑
+                        'gray-button': '#6b7280',   // 戻るボタンの灰色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8 flex items-start justify-center">
+
+    <!-- メインコンテナ -->
+    <div class="w-full max-w-md bg-white p-6 md:p-10 rounded-xl shadow-2xl border-t-8 border-primary-blue">
+        
+        <!-- タイトル -->
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-8 border-b pb-3 text-center" 
+            th:text="${user.id != null} ? 'ユーザー編集' : '新規ユーザー登録'">
+            ユーザー登録・編集
+        </h1>
+        
+        <!-- フォーム -->
+        <form th:action="${user.id != null} ? @{/admin/users/edit/{id}(id=${user.id})} : @{/admin/users/new}" method="post" class="space-y-6">
+            
+            <!-- ユーザー名 -->
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">ユーザー名：</label>
+                <input type="text" id="username" name="username" th:value="${user.username}" required
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue sm:text-sm"
+                       placeholder="ユーザー名を入力">
+            </div>
+
+            <!-- パスワード -->
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">パスワード：</label>
+                <input type="password" id="password" name="password" 
+                       class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue sm:text-sm"
+                       placeholder="変更しない場合は空欄">
+                <p th:if="${user.id != null}" class="mt-2 text-xs text-gray-500">※編集時は、パスワードを変更しない場合は空欄にしてください。</p>
+            </div>
+
+            <!-- 権限 -->
+            <div>
+                <label for="role" class="block text-sm font-medium text-gray-700 mb-1">権限：</label>
+                <select id="role" name="role" required
+                        class="mt-1 block w-full px-4 py-2 border border-gray-300 bg-white rounded-lg shadow-sm focus:ring-primary-blue focus:border-primary-blue sm:text-sm">
+                    <option value="ROLE_USER" th:selected="${user.role == 'ROLE_USER'}">一般ユーザー</option>
+                    <option value="ROLE_ADMIN" th:selected="${user.role == 'ROLE_ADMIN'}">管理者</option>
+                </select>
+            </div>
+
+            <!-- ボタン群 -->
+            <div class="flex justify-end space-x-4 pt-4 border-t mt-8">
+                <!-- 戻るボタン -->
+                <a th:href="@{/admin/users}" 
+                   class="px-5 py-2 rounded-lg font-semibold text-white bg-gray-button hover:bg-gray-600 transition duration-200 shadow-md flex items-center">
+                    戻る
+                </a>
+
+                <!-- 保存ボタン -->
+                <button type="submit" 
+                        class="px-5 py-2 rounded-lg font-semibold text-white bg-success-green hover:bg-green-600 transition duration-200 shadow-md">
+                    保存
+                </button>
+            </div>
+        </form>
+
+    </div>
+</body>
+</html>

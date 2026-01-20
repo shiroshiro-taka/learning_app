@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出題分野を選択 - 学習支援システム</title>
+    <!-- Tailwind CSS CDNを読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwindのカスタム設定（主要な青色とアクセントカラーを定義）
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
+                        'primary-blue-hover': '#1747a5',
+                        'accent-green': '#10b981', // メニュー項目のアクセントカラー
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 選択肢カードのホバー効果 */
+        .category-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .category-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans p-4 sm:p-8">
+    
+    <div class="max-w-4xl mx-auto">
+
+        <!-- ヘッダー -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-gray-900 border-b-2 border-primary-blue pb-2">出題分野を選択</h1>
+            <p class="mt-2 text-lg text-gray-600">挑戦したい学習分野を選んでください。</p>
+        </header>
+
+        <!-- 分野リスト -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">分野別問題演習</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- 各カテゴリの繰り返し処理 -->
+                <div th:each="cat : ${categories}">
+                    <a th:href="@{/play/category/{id}(id=${cat.id})}" class="category-card block bg-white p-5 rounded-xl shadow-md border-l-4 border-primary-blue hover:border-accent-green">
+                        <p class="text-lg font-semibold text-gray-900" th:text="${cat.name}"></p>
+                        <p class="text-sm text-gray-500 mt-1">
+                            <span class="font-bold text-primary-blue" th:text="${questionCounts[cat.id]}">0</span> 問
+                            <span class="ml-2 inline-block px-2 py-0.5 bg-blue-100 text-primary-blue text-xs font-medium rounded-full">挑戦する</span>
+                        </p>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 分野が存在しない場合のフォールバック -->
+            <div th:if="${#lists.isEmpty(categories)}" class="mt-8 text-center p-6 bg-gray-100 rounded-lg text-gray-600">
+                現在、選択可能な出題分野がありません。
+            </div>
+
+        </section>
+
+        <!-- その他のアクションと戻るボタン -->
+        <div class="mt-10 border-t pt-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+            
+            <!-- ランダム出題ボタン -->
+            <a th:href="@{/play/random}" class="w-full sm:w-auto flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-md text-white bg-accent-green hover:bg-green-700 transition duration-150">
+                <span class="mr-2 text-xl">🎲</span>
+                ランダム出題
+            </a>
+
+            <!-- ホームへ戻るリンク -->
+            <a href="/home" class="w-full sm:w-auto text-primary-blue hover:text-primary-blue-hover font-medium transition duration-150 py-3 sm:py-0 text-center sm:text-right">
+                ホームへ戻る
+            </a>
+        </div>
+
+    </div>
+</body>
+</html>

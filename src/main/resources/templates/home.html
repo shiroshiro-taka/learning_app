@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ホーム - 学習支援システム</title>
+    <!-- Tailwind CSS CDNを読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwindのカスタム設定（主要な青色とアクセントカラーを定義）
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
+                        'primary-blue-hover': '#1747a5',
+                        'accent-green': '#10b981', // メニュー項目のアクセントカラー
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+	<style>
+	    /* DBの改行・空白を保持するCSS (元の指定を維持) */
+	    .preserve-format {
+	        white-space: pre-wrap; /* 改行・空白を保持 */
+	    }
+	    /* メニューリンクのカスタムホバー効果 */
+	    .menu-link-card {
+	        transition: transform 0.2s, box-shadow 0.2s;
+	    }
+	    .menu-link-card:hover {
+	        /* ホバーでわずかに持ち上がり、影を濃くする */
+	        transform: translateY(-3px);
+	        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+	    }
+	</style>
+</head>
+<body class="bg-gray-50 font-sans">
+    
+    <!-- ヘッダー/ナビゲーションバー -->
+    <nav class="bg-white shadow-md sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            <!-- システムタイトル -->
+            <div class="text-2xl font-bold text-gray-900">
+                学習支援システム
+            </div>
+            
+            <!-- ログアウトフォーム -->
+            <form th:action="@{/logout}" method="post">
+                <button 
+                    type="submit"
+                    class="px-4 py-2 text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition duration-150 shadow-md"
+                >
+                    ログアウト
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    <!-- メインコンテンツエリア -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        
+        <!-- ユーザー挨拶とコメントのカード -->
+        <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg mb-8">
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-2">
+                ようこそ、<span th:text="${username}" class="text-primary-blue">User</span> さん！
+            </h2>
+			<p class="mt-4 text-lg font-medium text-gray-600">
+				Java資格であるOCJP Silver（Oracle Certified Java Programmer, Silver）の合格を目指すための学習支援システムです。
+			            </p>
+            <!-- ホームコメント (DBの改行・空白を保持) -->
+            <p class="preserve-format mt-4 text-gray-700" th:if="${homeComment != null}" th:text="${homeComment}"></p>
+        </div>
+        
+        <!-- 学習メニューセクション -->
+        <section class="mb-12">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-primary-blue pb-2">学習メニュー</h3>
+            
+            <!-- メニューのグリッドレイアウト -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                
+                <!-- メニュー項目をカード形式で配置 -->
+                <!-- 分野別問題演習 -->
+                <a th:href="@{/play/select}" class="menu-link-card block bg-white p-6 rounded-xl shadow-md border-l-4 border-accent-green hover:border-primary-blue">
+                    <p class="text-xl font-semibold text-gray-900">分野別問題演習</p>
+                    <p class="text-sm text-gray-500 mt-1">特定の分野を選んで集中的に学習します。</p>
+                </a>
+
+                <!-- ランダム出題 -->
+                <a th:href="@{/play/random}" class="menu-link-card block bg-white p-6 rounded-xl shadow-md border-l-4 border-accent-green hover:border-primary-blue">
+                    <p class="text-xl font-semibold text-gray-900">ランダム出題</p>
+                    <p class="text-sm text-gray-500 mt-1">全範囲からランダムに問題に挑戦します。</p>
+                </a>
+
+                <!-- 模擬試験 -->
+                <a th:href="@{/exam/list}" class="menu-link-card block bg-white p-6 rounded-xl shadow-md border-l-4 border-accent-green hover:border-primary-blue">
+                    <p class="text-xl font-semibold text-gray-900">模擬試験</p>
+                    <p class="text-sm text-gray-500 mt-1">本番形式で実力を試します。</p>
+                </a>
+                
+                <!-- 苦手問題に再挑戦 -->
+                <a th:href="@{/play/weak}" class="menu-link-card block bg-white p-6 rounded-xl shadow-md border-l-4 border-accent-green hover:border-primary-blue">
+                    <p class="text-xl font-semibold text-gray-900">苦手問題に再挑戦</p>
+                    <p class="text-sm text-gray-500 mt-1">過去に間違えた問題を中心に克服を目指します。</p>
+                </a>
+                
+                <!-- 学習進捗・成績確認 -->
+                <a th:href="@{/scores/result}" class="menu-link-card block bg-white p-6 rounded-xl shadow-md border-l-4 border-accent-green hover:border-primary-blue">
+                    <p class="text-xl font-semibold text-gray-900">学習進捗・成績確認</p>
+                    <p class="text-sm text-gray-500 mt-1">詳細な学習データと成績を確認します。</p>
+                </a>
+                
+                <!-- Java実行環境 -->
+				<a href="https://dokojava.jp/sources/Main.java/" target="_blank" class="menu-link-card block bg-white p-6 rounded-xl shadow-md border-l-4 border-accent-green hover:border-primary-blue">
+                    <p class="text-xl font-semibold text-gray-900">Java実行環境</p>
+                    <p class="text-sm text-gray-500 mt-1">ブラウザ上でJavaコードを試行・実行できます。(新しいタブで開きます）
+					</p>
+                </a>
+            </div>
+            
+            <!-- お問い合わせリンク -->
+            <div class="mt-8 text-center">
+                 <a th:if="${#authorization.expression('hasRole(''USER'')')}" 
+                    th:href="@{/inquiry/form}"
+                    class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-lg shadow-md text-white bg-primary-blue hover:bg-primary-blue-hover transition duration-150"
+                 >
+                    お問い合わせ
+                </a>
+            </div>
+        </section>
+
+
+        <!-- 管理者メニュー (ADMINロールの場合のみ表示) -->
+        <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}" class="mt-12 pt-6 border-t-2 border-gray-200">
+            <h3 class="text-2xl font-bold text-red-600 mb-6">管理者メニュー</h3>
+            
+            <!-- 管理者メニューのグリッドレイアウト -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                <!-- 管理者メニュー項目をカード形式で配置 (赤のアクセント) -->
+                <a href="/admin/categories" class="menu-link-card block bg-white p-4 rounded-lg shadow-md border-l-4 border-red-500 hover:border-red-700">
+                    <p class="text-lg font-medium text-gray-900">分野管理</p>
+                </a>
+                
+                <a href="/admin/questions" class="menu-link-card block bg-white p-4 rounded-lg shadow-md border-l-4 border-red-500 hover:border-red-700">
+                    <p class="text-lg font-medium text-gray-900">問題管理</p>
+                </a>
+                
+                <a href="/admin/mock_exam/list" class="menu-link-card block bg-white p-4 rounded-lg shadow-md border-l-4 border-red-500 hover:border-red-700">
+                    <p class="text-lg font-medium text-gray-900">模擬試験管理</p>
+                </a>
+                
+                <a href="/admin/users" class="menu-link-card block bg-white p-4 rounded-lg shadow-md border-l-4 border-red-500 hover:border-red-700">
+                    <p class="text-lg font-medium text-gray-900">ユーザー管理</p>
+                </a>
+                
+                <a th:href="@{/admin/home-comment}" class="menu-link-card block bg-white p-4 rounded-lg shadow-md border-l-4 border-red-500 hover:border-red-700">
+                    <p class="text-lg font-medium text-gray-900">ホームコメント編集</p>
+                </a>
+                
+                <a th:href="@{/admin/inquiries}" class="menu-link-card block bg-white p-4 rounded-lg shadow-md border-l-4 border-red-500 hover:border-red-700">
+                    <p class="text-lg font-medium text-gray-900">お問い合わせ一覧</p>
+                </a>
+                
+            </div>
+        </div>
+
+    </main>
+</body>
+</html>

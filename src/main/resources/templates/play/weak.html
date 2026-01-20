@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>苦手問題一覧 - 学習支援システム</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c55c8',
+                        'primary-blue-hover': '#1747a5',
+                        'error-red': '#ef4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ソートヘッダーのスタイル（PC版テーブル用） */
+        #weakTable th {
+            cursor: pointer;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+        #weakTable th:hover {
+             background-color: #e5e7eb;
+        }
+        #weakTable th.sort-asc::after { content: " ▲"; color: #1c55c8; }
+        #weakTable th.sort-desc::after { content: " ▼"; color: #1c55c8; }
+        #weakTable th.sort-asc::after,
+        #weakTable th.sort-desc::after {
+            font-size: 0.8em;
+            margin-left: 0.3em;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans p-4 sm:p-8">
+
+<div class="max-w-7xl mx-auto bg-white p-4 md:p-8 rounded-xl shadow-2xl space-y-6">
+
+    <header class="text-center mb-6">
+        <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 border-b-2 border-error-red pb-2 inline-block">
+            苦手問題一覧（正答率 60%以下）
+        </h2>
+        <p class="mt-4 text-base md:text-lg text-gray-600">集中して再挑戦すべき問題が表示されています。</p>
+    </header>
+
+    <!-- 1. モバイル用レイアウト (md未満で表示) -->
+    <div class="md:hidden space-y-4">
+        <div th:each="wq : ${weakQuestions}" class="border border-gray-200 rounded-xl p-4 bg-white shadow-sm hover:border-error-red transition-colors">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-xs font-bold text-gray-500 uppercase">問題番号: <span th:text="${wq.question.id}" class="text-gray-900">101</span></span>
+                <span th:text="${#numbers.formatDecimal(wq.rate*100, 0, 0)} + '%'" class="text-lg font-extrabold text-error-red">45%</span>
+            </div>
+            
+            <div class="mb-4">
+                <div class="text-sm font-semibold text-gray-900 mb-2">分野: <span th:text="${wq.question.category.name}" class="font-normal text-gray-600">ネットワーク</span></div>
+                
+                <!-- 統計情報のグリッド -->
+                <div class="grid grid-cols-3 gap-2 text-center text-xs py-2 bg-gray-50 rounded-lg">
+                    <div>
+                        <div class="text-gray-500 mb-1">回答</div>
+                        <div th:text="${wq.answered}" class="font-bold text-gray-900">10</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">正答</div>
+                        <div th:text="${wq.correct}" class="font-bold text-gray-900">4</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">誤答</div>
+                        <div th:text="${wq.answered - wq.correct}" class="font-bold text-error-red">6</div>
+                    </div>
+                </div>
+            </div>
+
+            <a th:href="@{/play/weak/{id}(id=${wq.question.id})}" 
+               class="block w-full text-center py-3 px-4 rounded-lg bg-primary-blue text-white font-bold hover:bg-primary-blue-hover transition shadow-sm">
+               再挑戦
+            </a>
+        </div>
+        
+        <div th:if="${#lists.isEmpty(weakQuestions)}" class="text-center p-8 bg-gray-50 rounded-xl text-gray-600">
+            現在、苦手と判定された問題はありません。
+        </div>
+    </div>
+
+    <!-- 2. デスクトップ用テーブル (md以上で表示) -->
+    <div class="hidden md:block overflow-hidden shadow-lg rounded-xl border border-gray-200">
+        <table id="weakTable" class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">問題番号</th>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">分野</th>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">回答数</th>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">正答数</th>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">誤答数</th>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">正答率</th>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">操作</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 text-center">
+                <tr th:each="wq : ${weakQuestions}" class="hover:bg-red-50/50 transition-colors">
+                    <td th:text="${wq.question.id}" class="px-4 py-4 text-sm font-medium text-gray-900"></td>
+                    <td th:text="${wq.question.category.name}" class="px-4 py-4 text-sm text-gray-600"></td>
+                    <td th:text="${wq.answered}" class="px-4 py-4 text-sm text-gray-600"></td>
+                    <td th:text="${wq.correct}" class="px-4 py-4 text-sm text-gray-600"></td>
+                    <td th:text="${wq.answered - wq.correct}" class="px-4 py-4 text-sm text-error-red font-semibold"></td>
+                    <td th:text="${#numbers.formatDecimal(wq.rate*100, 0, 0)} + '%'" class="px-4 py-4 text-sm font-bold text-error-red"></td>
+                    <td class="px-4 py-4">
+                        <a th:href="@{/play/weak/{id}(id=${wq.question.id})}" 
+                           class="inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-bold rounded-lg shadow-sm text-white bg-primary-blue hover:bg-primary-blue-hover transition duration-150">
+                           再挑戦
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div th:if="${#lists.isEmpty(weakQuestions)}" class="text-center p-12 bg-white text-gray-600 font-bold">
+            現在、苦手と判定された問題はありません。素晴らしいです！
+        </div>
+    </div>
+
+    <div class="mt-8 text-center pt-6 border-t border-gray-200">
+        <a href="/home" class="inline-flex items-center text-primary-blue hover:text-primary-blue-hover font-bold transition duration-150">
+            ホームへ戻る
+        </a>
+    </div>
+
+</div>
+
+<script>
+$(document).ready(function() {
+    let sortDirection = {};
+
+    function sortTable(colIndex) {
+        const table = $("#weakTable");
+        const tbody = table.find("tbody");
+        const rows = tbody.find("tr").toArray();
+        if (rows.length === 0) return;
+
+        const asc = !sortDirection[colIndex];
+        sortDirection[colIndex] = asc;
+
+        table.find("th").removeClass("sort-asc sort-desc");
+        table.find("th").eq(colIndex).addClass(asc ? "sort-asc" : "sort-desc");
+
+        rows.sort((a, b) => {
+            let A = $(a).find("td").eq(colIndex).text().replace('%','').trim();
+            let B = $(b).find("td").eq(colIndex).text().replace('%','').trim();
+
+            const isNumeric = colIndex !== 1 && colIndex !== 6;
+            if (isNumeric) {
+                A = parseFloat(A) || 0;
+                B = parseFloat(B) || 0;
+            }
+
+            if (A < B) return asc ? -1 : 1;
+            if (A > B) return asc ? 1 : -1;
+            return 0;
+        });
+
+        $.each(rows, function(_, row) {
+            tbody.append(row);
+        });
+    }
+
+    $("#weakTable th").on("click", function() {
+        const index = $(this).index();
+        if (index < 6) sortTable(index);
+    });
+
+    if ($("#weakTable tbody tr").length > 0) {
+        sortTable(0);
+    }
+});
+</script>
+
+</body>
+</html>

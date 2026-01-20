@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模擬試験一覧 (管理)</title>
+    <!-- Tailwind CSS CDNを読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwindのカスタム設定 (他の画面と共通化)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
+                        'primary-blue-hover': '#1747a5',
+                        'success-green': '#10b981', // 新規作成ボタンの緑
+                        'error-red': '#ef4444',     // 削除ボタンの赤
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* テーブルのレイアウト調整 */
+        .table-layout-fixed {
+            table-layout: fixed;
+        }
+        /* テーブルの列幅指定（Tailwindのスタイルを上書きまたは補完） */
+        .col-id { width: 5%; }
+        .col-exam-name { width: 20%; }
+        .col-q-count { width: 10%; }
+        .col-duration { width: 10%; }
+        .col-description { width: 45%; }
+        .col-actions { width: 10%; }
+        
+        /* 詳細文が長すぎる場合の表示制御 */
+        .clamp-text {
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* 2行に制限 */
+            -webkit-box-orient: vertical;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+    <!-- メインコンテナ -->
+    <div class="max-w-7xl mx-auto w-full">
+        
+        <!-- ヘッダーとナビゲーション -->
+        <header class="mb-6 md:mb-8 border-b border-gray-200 pb-4 flex justify-between items-center">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">
+                模擬試験一覧 (管理)
+            </h1>
+            <a href="/home" class="text-primary-blue hover:text-primary-blue-hover font-medium flex items-center transition duration-150">
+                ホームへ戻る
+            </a>
+        </header>
+
+        <!-- アクションボタン -->
+        <div class="mb-6 flex justify-between items-center">
+            <a href="/admin/mock_exam/create" class="inline-flex items-center px-4 py-2 bg-success-green text-white font-semibold rounded-lg shadow-md hover:bg-green-600 transition duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                新規作成
+            </a>
+        </div>
+
+        <!-- 模擬試験一覧テーブル -->
+        <div class="bg-white shadow-xl rounded-xl overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200 table-layout-fixed">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th scope="col" class="col-id px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">ID</th>
+                        <th scope="col" class="col-exam-name px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">試験名</th>
+                        <th scope="col" class="col-q-count px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">問題数</th>
+                        <th scope="col" class="col-duration px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">試験時間（分）</th>
+                        <th scope="col" class="col-description px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">試験詳細</th>
+                        <th scope="col" class="col-actions px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr th:each="exam : ${exams}" class="hover:bg-gray-50 transition duration-150">
+                        <td th:text="${exam.id}" class="col-id px-6 py-4 whitespace-nowrap text-sm text-gray-900">1</td>
+                        <td th:text="${exam.examName}" class="col-exam-name px-6 py-4 text-sm font-medium text-gray-900"></td>
+                        <td th:text="${exam.questionCount}" class="col-q-count px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center"></td>
+                        <td th:text="${exam.durationMinutes}" class="col-duration px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center"></td>
+                        <td class="col-description px-6 py-4 text-sm text-gray-600">
+                            <!-- 詳細文を2行に制限して表示 -->
+                            <div th:text="${exam.description}" class="clamp-text"></div>
+                        </td>
+                        <td class="col-actions px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <!-- 削除ボタン (フォーム) -->
+                            <form th:action="@{/admin/mock_exam/delete/{id}(id=${exam.id})}" method="post" onsubmit="return confirm('本当に模擬試験「' + [[${exam.examName}]] + '」を削除しますか？\nこの操作は元に戻せません。');">
+                                <button type="submit" 
+                                        class="text-error-red hover:text-red-700 transition duration-150 font-semibold">
+                                    削除
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>解答見直し: [[${exam.examName}]]</title>
+<!-- Tailwind CSS CDNを読み込み -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    // Tailwindのカスタム設定 (試験画面と共通化)
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'primary-blue': '#1c55c8', // ボタンやアクセント用の青
+                    'primary-blue-hover': '#1747a5',
+                    'success-green': '#10b981', // 解答済みの緑
+                    'error-red': '#ef4444',     // 未解答の赤
+                    'accent-yellow': '#facc15', // 見直しフラグの黄色
+                    'dark-panel': '#2d3748',    // コントロールパネルの背景
+                },
+                fontFamily: {
+                    sans: ['Inter', 'sans-serif'],
+                },
+            }
+        }
+    }
+</script>
+<style>
+  /* 見直しフラグ付きのカードを強調するためのスタイル */
+  .review-flag-on {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+    border-left: 6px solid #facc15; /* accent-yellow */
+  }
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- メインコンテナ -->
+    <div class="max-w-6xl mx-auto p-4 md:p-8">
+        
+        <!-- ヘッダーとタイトル -->
+        <header class="mb-6 md:mb-8 border-b border-gray-200 pb-4">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">
+                解答見直し: <span th:text="${exam.examName}"></span>
+            </h1>
+            <p class="text-gray-600">以下のリストから問題を選択し、回答中の問題に戻って編集を続けてください。</p>
+        </header>
+
+        <!-- アクションボタン -->
+        <a th:href="@{/exam/start/{examId}(examId=${exam.id}, questionId=${initialQuestionId})}" 
+           class="back-to-exam-btn inline-block mb-8 px-6 py-3 bg-primary-blue text-white text-lg font-semibold rounded-lg shadow-md hover:bg-primary-blue-hover transition duration-200">
+            &larr; 回答中の問題に戻る
+        </a>
+
+        <!-- レビューリストグリッド -->
+        <div id="review-list" class="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            
+            <div th:each="dto : ${userAnswerDtoList}" 
+                 class="review-item bg-white border border-gray-200 rounded-xl shadow-lg transition duration-200 hover:shadow-xl hover:scale-[1.01]" 
+                 th:classappend="${dto.reviewFlag ? 'review-flag-on' : 'border-l-4 border-gray-200'}">
+                
+                <!-- リンク全体をカード内に設定 -->
+                <a th:href="@{/exam/start/{examId}(examId=${exam.id}, questionId=${dto.questionId})}" 
+                   class="p-5 block text-gray-700 hover:text-primary-blue">
+                    
+                    <div class="flex justify-between items-start mb-2">
+                        <!-- 問題番号 -->
+                        <span class="text-2xl font-bold text-gray-800" th:text="'問' + ${dto.questionNumber}">問1</span>
+                        
+                        <!-- 見直しマーク -->
+                        <span th:if="${dto.reviewFlag}" class="text-accent-yellow font-bold text-xl ml-2 flex items-center">
+                            📌
+                        </span>
+                    </div>
+
+                    <!-- 解答状況 -->
+                    <p class="text-sm font-medium">
+                        解答状況: 
+                        <span th:classappend="${dto.answerStatus.name() == 'ANSWERED' ? 'text-success-green' : 'text-error-red'}" 
+                              th:text="${dto.answerStatus.displayName}"
+                              class="font-extrabold"></span>
+                    </p>
+                    
+                </a>
+                
+            </div>
+            
+        </div>
+        
+    </div>
+    
+</body>
+</html>

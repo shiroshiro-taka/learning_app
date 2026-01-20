@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ユーザー管理</title>
+    <!-- Tailwind CSS CDNを読み込み -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwindのカスタム設定 (他の画面と共通化)
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
+                        'primary-blue-hover': '#1747a5',
+                        'success-green': '#10b981', // 新規登録ボタンの緑
+                        'error-red': '#ef4444',     // 削除ボタンの赤
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* テーブルのレイアウト調整 */
+        .table-layout-fixed {
+            table-layout: fixed;
+        }
+        /* テーブルの列幅指定（Tailwindのスタイルを上書きまたは補完） */
+        .col-id { width: 5%; }
+        .col-username { width: 30%; }
+        .col-role { width: 15%; }
+        .col-created-at { width: 25%; }
+        .col-actions { width: 25%; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8 flex flex-col">
+
+    <!-- メインコンテナ -->
+    <div class="max-w-6xl mx-auto w-full flex flex-col flex-grow">
+        
+        <!-- ヘッダーとナビゲーション -->
+        <header class="mb-6 md:mb-8 border-b border-gray-200 pb-4 flex justify-between items-center flex-shrink-0">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800">
+                ユーザー一覧 (管理)
+            </h1>
+            <a href="/home" class="text-primary-blue hover:text-primary-blue-hover font-medium flex items-center transition duration-150">
+                ホームへ戻る
+            </a>
+        </header>
+
+        <!-- 新規ユーザー登録ボタン -->
+        <div class="mb-6 flex-shrink-0">
+            <a th:href="@{/admin/users/new}" class="inline-flex items-center px-4 py-2 bg-success-green text-white font-semibold rounded-lg shadow-md hover:bg-green-600 transition duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                新規ユーザー登録
+            </a>
+        </div>
+
+        <!-- ユーザー一覧テーブルコンテナ -->
+        <div class="bg-white shadow-xl rounded-xl overflow-y-auto flex-grow">
+            <table class="min-w-full divide-y divide-gray-200 table-layout-fixed">
+                <thead class="bg-gray-100 sticky top-0 z-10">
+                    <tr>
+                        <th scope="col" class="col-id px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">ID</th>
+                        <th scope="col" class="col-username px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">ユーザー名</th>
+                        <th scope="col" class="col-role px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">権限</th>
+                        <th scope="col" class="col-created-at px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">登録日時</th>
+                        <th scope="col" class="col-actions px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr th:each="user : ${users}" class="hover:bg-gray-50 transition duration-150">
+                        <td th:text="${user.id}" class="col-id px-6 py-4 whitespace-nowrap text-sm text-gray-900"></td>
+                        <td th:text="${user.username}" class="col-username px-6 py-4 text-sm font-medium text-gray-900"></td>
+                        <td th:text="${user.role}" 
+                            th:classappend="${user.role == 'ADMIN' ? 'text-error-red font-bold' : 'text-primary-blue'}"
+                            class="col-role px-6 py-4 whitespace-nowrap text-sm font-medium"></td>
+                        <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}" class="col-created-at px-6 py-4 whitespace-nowrap text-sm text-gray-500"></td>
+                        <td class="col-actions px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-3">
+                                <!-- 編集ボタン -->
+                                <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" 
+                                   class="text-primary-blue hover:text-primary-blue-hover transition duration-150 font-semibold">
+                                    編集
+                                </a>
+                                <span>|</span>
+                                <!-- 削除ボタン (リンク形式だが削除機能) -->
+                                <a th:href="@{/admin/users/delete/{id}(id=${user.id})}" 
+                                   onclick="return confirm('本当にユーザーID ' + [[${user.id}]] + ' を削除しますか？\nこの操作は元に戻せません。');"
+                                   class="text-error-red hover:text-red-700 transition duration-150 font-semibold">
+                                    削除
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

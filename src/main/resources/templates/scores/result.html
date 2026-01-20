@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学習進捗・成績確認 - 学習支援システム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c55c8',
+                        'primary-blue-hover': '#1747a5',
+                        'success-green': '#10b981',
+                        'error-red': '#ef4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans p-4 sm:p-8">
+
+<div class="max-w-7xl mx-auto bg-white p-4 md:p-10 rounded-xl shadow-2xl space-y-8 md:space-y-10">
+
+    <header class="text-center mb-6 md:mb-8">
+        <h1 class="text-2xl md:text-4xl font-extrabold text-gray-900 border-b-4 border-primary-blue pb-3 inline-block">学習進捗・成績確認</h1>
+        <p class="mt-4 text-base md:text-lg text-gray-600">あなたの現在の学習状況と成績を確認できます。</p>
+    </header>
+
+    <!-- 1. 全体サマリー (グリッドでレスポンシブ対応済) -->
+    <div class="section">
+        <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 border-l-4 border-primary-blue pl-3">全体サマリー</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:grid-cols-3 md:gap-6">
+            <div class="bg-blue-50 p-5 md:p-6 rounded-xl shadow-md border-l-4 border-primary-blue">
+                <p class="text-sm font-medium text-gray-600">全体進捗率</p>
+                <p class="text-3xl md:text-4xl font-extrabold text-primary-blue mt-1"><span th:text="${progressRate}">0</span>%</p>
+                <p class="text-xs text-gray-500 mt-2">(<span th:text="${totalAnswered}">0</span> 問回答 / <span th:text="${totalQuestions}">0</span> 問中)</p>
+            </div>
+            <div class="bg-green-50 p-5 md:p-6 rounded-xl shadow-md border-l-4 border-success-green">
+                <p class="text-sm font-medium text-gray-600">全体正答率</p>
+                <p class="text-3xl md:text-4xl font-extrabold text-success-green mt-1"><span th:text="${correctRate}">0</span>%</p>
+                <p class="text-xs text-gray-500 mt-2">(<span th:text="${totalCorrect}">0</span> 問正答 / <span th:text="${totalAnswered}">0</span> 問回答)</p>
+            </div>
+            <div class="bg-yellow-50 p-5 md:p-6 rounded-xl shadow-md border-l-4 border-yellow-500">
+                <p class="text-sm font-medium text-gray-600">未回答 / 誤答数</p>
+                <p class="text-3xl md:text-4xl font-extrabold text-yellow-700 mt-1">
+                    <span th:text="${totalQuestions - totalAnswered}">0</span> / <span th:text="${totalAnswered - totalCorrect}">0</span>
+                </p>
+                <p class="text-xs text-gray-500 mt-2">(未回答 / 誤答)</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 2. 分野別状況 -->
+    <div class="section">
+        <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 border-l-4 border-primary-blue pl-3">分野別状況</h2>
+
+        <!-- モバイル用リスト (lg未満) -->
+        <div class="lg:hidden space-y-4">
+            <div th:each="entry : ${categoryStats}" class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                <h3 th:text="${entry.key}" class="text-lg font-bold text-gray-900 mb-3 border-b pb-2 text-primary-blue">分野名</h3>
+                <div class="grid grid-cols-2 gap-y-3 gap-x-4">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">問題数</p>
+                        <p th:text="${entry.value['total']}" class="text-sm text-gray-700">0</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">回答数</p>
+                        <p th:text="${entry.value['answered']}" class="text-sm text-gray-700">0</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">進捗率</p>
+                        <p th:text="${entry.value['progressRate']} + '%'" 
+                           th:classappend="${entry.value['progressRate'] == 100} ? 'text-success-green' : 'text-primary-blue'"
+                           class="text-sm font-bold">0%</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-bold">正答率</p>
+                        <p th:text="${entry.value['correctRate']} + '%'"
+                           th:classappend="${entry.value['correctRate'] >= 80} ? 'text-success-green' : (${entry.value['correctRate'] <= 60} ? 'text-error-red' : 'text-gray-700')"
+                           class="text-sm font-bold">0%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- デスクトップ用テーブル (lg以上) -->
+        <div class="hidden lg:block overflow-hidden shadow-lg rounded-xl border border-gray-200">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-100 font-bold text-gray-600">
+                    <tr>
+                      <th class="px-6 py-4 text-xs uppercase text-left">分野名</th>
+                      <th class="px-6 py-4 text-xs uppercase text-center">問題数</th>
+                      <th class="px-6 py-4 text-xs uppercase text-center">回答数</th>
+                      <th class="px-6 py-4 text-xs uppercase text-center">正答数</th>
+                      <th class="px-6 py-4 text-xs uppercase text-center">進捗率</th>
+                      <th class="px-6 py-4 text-xs uppercase text-center">正答率</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr th:each="entry : ${categoryStats}" class="hover:bg-gray-50 transition-colors">
+                      <td th:text="${entry.key}" class="px-6 py-4 text-sm font-semibold text-gray-900 text-left"></td>
+                      <td th:text="${entry.value['total']}" class="px-6 py-4 text-sm text-gray-600 text-center"></td> 
+                      <td th:text="${entry.value['answered']}" class="px-6 py-4 text-sm text-gray-600 text-center"></td> 
+                      <td th:text="${entry.value['correct']}" class="px-6 py-4 text-sm text-gray-600 text-center"></td>
+                      <td class="px-6 py-4 text-sm font-bold text-center">
+                          <span th:text="${entry.value['progressRate']} + '%'" 
+                                th:classappend="${entry.value['progressRate'] == 100} ? 'text-success-green' : 'text-primary-blue'"></span>
+                      </td>
+                      <td class="px-6 py-4 text-sm font-bold text-center">
+                          <span th:text="${entry.value['correctRate']} + '%'"
+                                th:classappend="${entry.value['correctRate'] >= 80} ? 'text-success-green' : (${entry.value['correctRate'] <= 60} ? 'text-error-red' : 'text-gray-700')"></span>
+                      </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- 3. 模擬試験結果履歴 -->
+    <div class="section">
+      <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-4 border-l-4 border-primary-blue pl-3">📝 模擬試験結果履歴</h2>
+      
+      <!-- モバイル用 (lg未満) -->
+      <div th:if="${not #lists.isEmpty(examResults)}" class="lg:hidden space-y-4">
+          <div th:each="result : ${examResults}" class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+              <div class="flex justify-between items-start mb-2">
+                  <h3 th:text="${result.examName}" class="text-md font-bold text-gray-900 break-words flex-1 pr-2">試験名</h3>
+                  <span th:text="${result.passOrFail}" 
+                        th:classappend="${result.passOrFail == '合格'} ? 'bg-green-100 text-success-green' : 'bg-red-100 text-error-red'"
+                        class="text-xs font-bold px-2 py-1 rounded">合否</span>
+              </div>
+              <div class="text-xs text-gray-500 mb-3" th:text="${#temporals.format(result.takenAt, 'yyyy/MM/dd HH:mm')}">2023/01/01</div>
+              <div class="grid grid-cols-2 gap-2 text-sm bg-gray-50 p-3 rounded-lg">
+                  <div><span class="text-gray-500">正答率:</span> <span class="font-bold text-gray-900" th:text="${result.correctRate} + '%'">0%</span></div>
+                  <div><span class="text-gray-500">スコア:</span> <span class="font-bold text-gray-900" th:text="${result.correctAnswers} + ' / ' + ${result.totalQuestions}">0/20</span></div>
+              </div>
+          </div>
+      </div>
+
+      <!-- デスクトップ用 (lg以上) -->
+      <div th:if="${not #lists.isEmpty(examResults)}" class="hidden lg:block overflow-hidden shadow-lg rounded-xl border border-gray-200">
+          <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-100 font-bold text-gray-600">
+                <tr>
+                  <th class="px-4 py-4 text-xs uppercase text-center">受験日</th>
+                  <th class="px-4 py-4 text-xs uppercase text-left">試験名</th>
+                  <th class="px-4 py-4 text-xs uppercase text-center">問題数</th>
+                  <th class="px-4 py-4 text-xs uppercase text-center">正答数</th>
+                  <th class="px-4 py-4 text-xs uppercase text-center">正答率</th>
+                  <th class="px-4 py-4 text-xs uppercase text-center">判定</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr th:each="result : ${examResults}" class="hover:bg-gray-50">
+                  <td th:text="${#temporals.format(result.takenAt, 'yyyy/MM/dd HH:mm')}" class="px-4 py-4 text-sm text-gray-500 text-center"></td>
+                  <td th:text="${result.examName}" class="px-4 py-4 text-sm text-gray-700 text-left font-semibold"></td> 
+                  <td th:text="${result.totalQuestions}" class="px-4 py-4 text-sm text-gray-600 text-center"></td> 
+                  <td th:text="${result.correctAnswers}" class="px-4 py-4 text-sm text-gray-600 text-center"></td> 
+                  <td th:text="${result.correctRate} + '%'" class="px-4 py-4 text-sm font-bold text-center"></td> 
+                  <td th:text="${result.passOrFail}" 
+                      th:classappend="${result.passOrFail == '合格'} ? 'text-success-green' : 'text-error-red'"
+                      class="px-4 py-4 text-sm font-bold text-center"></td>
+                </tr>
+              </tbody>
+          </table>
+      </div>
+      <p th:unless="${not #lists.isEmpty(examResults)}" class="mt-4 p-8 bg-gray-50 rounded-xl text-gray-500 text-center italic">まだ模擬試験の結果はありません。</p>
+    </div>
+  
+    <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+        <a th:href="@{/home}" class="inline-flex items-center text-primary-blue hover:text-primary-blue-hover font-bold transition duration-150">
+            ホームへ戻る
+        </a>
+    </div>
+
+</div>
+
+</body>
+</html>

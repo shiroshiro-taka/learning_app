@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模擬試験選択 - 学習支援システム</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1c55c8',
+                        'primary-blue-hover': '#1747a5',
+                        'accent-orange': '#f97316',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 font-sans p-4 sm:p-8">
+
+<div class="max-w-4xl mx-auto bg-white p-4 md:p-10 rounded-xl shadow-2xl space-y-6 md:space-y-8">
+
+    <header class="text-center mb-4 md:mb-6">
+        <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 border-b-4 border-accent-orange pb-2 inline-block">模擬試験一覧</h2>
+        <p class="mt-4 text-base md:text-lg text-gray-600">受験したい試験を選択してください。</p>
+    </header>
+
+    <!-- 1. モバイル用レイアウト (md未満で表示) -->
+    <div class="md:hidden space-y-4">
+        <!-- Thymeleafでの繰り返し処理 -->
+        <div th:each="exam : ${exams}" class="border border-gray-200 rounded-xl p-4 bg-white shadow-sm hover:border-accent-orange transition-colors">
+            <div class="flex justify-between items-start mb-3">
+                <h3 th:text="${exam.examName}" class="text-lg font-bold text-gray-900 flex-1 pr-2 break-words">試験名</h3>
+                <span class="bg-orange-100 text-accent-orange text-xs font-bold px-2 py-1 rounded">
+                    <span th:text="${exam.durationMinutes}">60</span>分
+                </span>
+            </div>
+            <div class="flex items-center text-sm text-gray-600 mb-4">
+                <span class="mr-2">問題数:</span>
+                <span th:text="${exam.questionCount}" class="font-medium text-gray-900">20</span>問
+            </div>
+            <a th:href="@{/exam/start/{id}(id=${exam.id})}"
+               class="block w-full text-center py-3 px-4 rounded-lg bg-primary-blue text-white font-bold hover:bg-primary-blue-hover transition shadow-sm">
+                試験開始
+            </a>
+        </div>
+
+        <!-- データがない場合 -->
+        <div th:if="${#lists.isEmpty(exams)}" class="text-center p-8 bg-gray-50 rounded-xl text-gray-500">
+            現在受験可能な模擬試験はありません。
+        </div>
+    </div>
+
+    <!-- 2. デスクトップ用テーブル (md以上で表示) -->
+    <div class="hidden md:block overflow-hidden shadow-lg rounded-xl border border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-left">試験名</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">問題数</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">試験時間</th>
+                    <th class="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">操作</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <tr th:each="exam : ${exams}" class="hover:bg-orange-50/50 transition-colors">
+                    <td th:text="${exam.examName}" class="px-6 py-5 text-sm font-semibold text-gray-900 break-words"></td>
+                    <td th:text="${exam.questionCount + ' 問'}" class="px-6 py-5 text-sm text-gray-600 text-center"></td>
+                    <td th:text="${exam.durationMinutes + ' 分'}" class="px-6 py-5 text-sm font-bold text-accent-orange text-center"></td>
+                    <td class="px-6 py-5 text-center">
+                        <a th:href="@{/exam/start/{id}(id=${exam.id})}"
+                           class="inline-flex items-center justify-center px-6 py-2 border border-transparent text-sm font-bold rounded-lg shadow-sm text-white bg-primary-blue hover:bg-primary-blue-hover transition duration-150">
+                            試験開始
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ホームへ戻るリンク -->
+    <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+        <a href="/home" class="inline-flex items-center text-primary-blue hover:text-primary-blue-hover font-bold transition duration-150">
+            ホームへ戻る
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

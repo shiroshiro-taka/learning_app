@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>試験結果: [[${result.mockExam.examName}]]</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'primary-blue': '#1c55c8',
+                    'primary-blue-hover': '#1747a5',
+                    'success-green': '#10b981',
+                    'error-red': '#ef4444',
+                    'accent-yellow': '#facc15',
+                },
+                fontFamily: {
+                    sans: ['Inter', 'sans-serif'],
+                },
+            }
+        }
+    }
+</script>
+<style>
+    .status-合格 {
+        color: #10b981;
+        border: 2px solid #10b981;
+        background-color: #ecfdf5;
+    }
+    .status-不合格 {
+        color: #ef4444;
+        border: 2px solid #ef4444;
+        background-color: #fef2f2;
+    }
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+        
+        <div class="bg-white rounded-xl shadow-2xl p-6 md:p-10 mb-8 border-t-8 border-primary-blue">
+            <h2 class="text-4xl font-extrabold text-gray-800 mb-4 border-b pb-3">
+                <span th:text="${result.mockExam.examName}">模擬試験名</span> の試験結果
+            </h2>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-lg mb-6">
+                <h3 class="text-2xl font-bold mb-3 sm:mb-0">合否判定:</h3>
+                <span class="px-6 py-2 text-3xl font-black rounded-full" 
+                      th:text="${resultStatus}"
+                      th:classappend="${resultStatus == '合格' ? 'status-合格' : 'status-不合格'}">
+                    合格
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                <div class="bg-primary-blue text-white p-5 rounded-lg shadow-md">
+                    <p class="text-sm font-medium opacity-80">正答率</p>
+                    <p class="text-4xl font-black mt-1">
+                        <span th:text="${correctRate}">85.0</span>%
+                    </p>
+                </div>
+                
+                <div class="bg-success-green text-white p-5 rounded-lg shadow-md">
+                    <p class="text-sm font-medium opacity-80">正答数</p>
+                    <p class="text-4xl font-black mt-1">
+                        <span th:text="${correctCount}">17</span> / <span th:text="${totalQuestions}">20</span>
+                    </p>
+                </div>
+                
+                <div class="bg-error-red text-white p-5 rounded-lg shadow-md">
+                    <p class="text-sm font-medium opacity-80">誤答数</p>
+                    <p class="text-4xl font-black mt-1">
+                        <span th:text="${totalQuestions} - ${correctCount}">3</span> / <span th:text="${totalQuestions}">20</span>
+                    </p>
+                </div>
+
+                <div class="bg-gray-700 text-white p-5 rounded-lg shadow-md">
+                    <p class="text-sm font-medium opacity-80">試験時間（制限）</p>
+                    <p class="text-2xl font-black mt-1">
+                        <span th:text="${result.mockExam.durationMinutes}"></span> 分
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-6 border-t border-gray-100 space-y-2 text-gray-600 text-sm">
+                <p><strong>試験開始日時:</strong> <span th:text="${#temporals.format(result.startedAt, 'yyyy/MM/dd HH:mm')}"></span></p>
+                <p><strong>試験終了日時:</strong> <span th:text="${#temporals.format(result.finishedAt, 'yyyy/MM/dd HH:mm')}"></span></p>
+            </div>
+        </div>
+
+        <div class="text-center mt-10">
+            <a th:href="@{/exam/list}" 
+               class="inline-block px-8 py-3 bg-primary-blue text-white text-lg font-semibold rounded-lg shadow-xl hover:bg-primary-blue-hover transition duration-200">
+                模擬試験一覧に戻る
+            </a>
+        </div>
+        
+    </div>
+</body>
+</html>
