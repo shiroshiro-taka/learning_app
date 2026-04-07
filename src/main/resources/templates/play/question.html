@@ -4,17 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>問題演習 - 学習支援システム</title>
-    <!-- Tailwind CSS CDNを読み込み -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Tailwindのカスタム設定（主要な青色とアクセントカラーを定義）
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
+                        'primary-blue': '#1c55c8',
                         'primary-blue-hover': '#1747a5',
-                        'accent-green': '#10b981', // メニュー項目のアクセントカラー
+                        'accent-green': '#10b981',
+                        'accent-orange': '#f59e0b',
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -23,50 +22,32 @@
             }
         }
     </script>
-	<!-- highlight.jsのスタイル -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
 	<style>
-	    /* DBの改行・空白を保持するCSS */
-	    .preserve-format {
-	        white-space: pre-wrap; /* 改行・空白を保持 */
-	    }
-	    
-	    /* highlight.jsが適用するコードブロック全体 (背景色とパディングの調整) */
+	    .preserve-format { white-space: pre-wrap; }
 	    .hljs {
-	        padding: 0.5em; /* デフォルトのパディングを微調整 */
-	        background: #f3f3f3; /* コードブロックの背景色 */
-            border-radius: 0.5rem; /* 角丸を適用 */
-            line-height: 1.4; /* 行間を調整して見やすく */
+	        padding: 0.5em;
+	        background: #f3f3f3;
+            border-radius: 0.5rem;
+            line-height: 1.4;
 	    }
-
-	    /* 選択肢のコンテナ (元のflexboxと幅の指定をTailwindと統合しつつ維持) */
 	    .choice-container {
-	        /* Tailwind: flex, items-start, mb-4, w-full */
-	        /* カスタムCSSのmax-width: 50% をw-full md:w-1/2に置き換えてレスポンシブに */
 	        display: flex;
 	        align-items: flex-start;
 	        margin-bottom: 1rem;
 	    }
-	    
-	    /* ラジオボタンの配置 */
 	    .choice-radio {
-	        margin-right: 1rem; /* ラジオボタンとコードの間にスペース */
-	        margin-top: 0.25rem; /* コードの行とラジオボタンの高さを微調整 */
-	        flex-shrink: 0; /* ラジオボタンが縮まないようにする */
+	        margin-right: 1rem;
+	        margin-top: 0.25rem;
+	        flex-shrink: 0;
 	    }
-	    
-	    /* コードの表示エリア */
 	    .choice-code-wrapper {
-	        flex-grow: 1; /* 残りのスペースをコードエリアが占める */
-	        overflow-x: auto; /* 横に長いコードに対応 */
+	        flex-grow: 1;
+	        overflow-x: auto;
 	    }
-
 	</style>
-	<!-- MathJaxの読み込み -->
 	<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-	<script id="MathJax-script" async
-	    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-	</script>
+	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body class="bg-gray-50 font-sans p-4 sm:p-8">
 
@@ -77,14 +58,23 @@
             <p class="text-sm text-gray-500 font-medium question-id">
                 問題管理番号：<span th:text="${question.id}">Q001</span>
             </p>
-            <!-- 分野別出題時のみ「問題 x / y」表示 -->
-            <p th:unless="${isRandom}"
-               th:text="'問題 ' + (${currentIndex + 1}) + '/' + ${total}"
-               class="text-sm font-semibold text-primary-blue">
-            </p>
-            <p th:if="${isRandom}" class="text-sm font-semibold text-accent-green">
-                ランダム出題中
-            </p>
+            
+            <!-- 出題モードに応じた右上の表示 -->
+            <div class="text-sm font-semibold">
+                <!-- 苦手問題出題中 -->
+                <p th:if="${isWeak}" class="text-accent-orange flex items-center">
+                    <span class="material-icons text-sm me-1"></span>苦手問題出題中
+                </p>
+                <!-- ランダム出題中 -->
+                <p th:if="${isRandom and !isWeak}" class="text-accent-green">
+                    ランダム出題中
+                </p>
+                <!-- 分野別出題中（通常） -->
+                <p th:if="${!isRandom and !isWeak}"
+                   th:text="'問題 ' + (${currentIndex + 1}) + '/' + ${total}"
+                   class="text-primary-blue">
+                </p>
+            </div>
         </div>
 	
         <!-- 問題文 -->
@@ -99,6 +89,8 @@
             <input type="hidden" name="categoryId" th:value="${categoryId}">
             <input type="hidden" name="currentIndex" th:value="${currentIndex}">
 	        <input type="hidden" name="isRandom" th:value="${isRandom}">
+            <!-- 苦手問題フラグを保持 -->
+            <input type="hidden" name="isWeak" th:value="${isWeak}">
 
             <!-- 選択肢リスト -->
             <div class="space-y-4">
@@ -109,17 +101,13 @@
                     </div>
 
                     <div class="choice-code-wrapper w-full">
-                        <!-- コードブロックを含む選択肢テキスト -->
                         <pre class="rounded-lg shadow-inner"><code class="language-java preserve-format" th:utext="${choice.choiceText}"></code></pre>
                     </div>
                 </div>
             </div>
 	
             <!-- 回答ボタン -->
-            <button 
-                type="submit"
-                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-lg font-medium text-white bg-primary-blue hover:bg-primary-blue-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue transition duration-150 ease-in-out mt-8"
-            >
+            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-lg font-medium text-white bg-primary-blue hover:bg-primary-blue-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue transition duration-150 ease-in-out mt-8">
                 回答する
             </button>
         </form>
@@ -134,27 +122,18 @@
                 ホームへ戻る
             </a>
         </div>
-
     </div>
 
-<!-- highlight.jsの実行 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
 <script>
-    // ページロード後にハイライト処理を実行
     hljs.highlightAll();
-    
-    // 選択肢全体をクリックできるようにするイベントリスナー
     document.querySelectorAll('.choice-container').forEach(container => {
         container.addEventListener('click', function() {
-            // コンテナ内のラジオボタンをチェックする
             const radio = this.querySelector('input[type="radio"]');
-            if (radio) {
-                radio.checked = true;
-            }
+            if (radio) { radio.checked = true; }
         });
     });
 </script>
-
 </body>
 </html>

@@ -62,20 +62,15 @@ public class QuestionController {
     /** 分野選択画面 */
     @GetMapping("/select")
     public String selectCategory(Model model) {
-
-    	 List<Category> categories = categoryRepository.findAll();
-
-    	    // カテゴリごとの問題数を取得
-    	    Map<Long, Long> questionCounts = new HashMap<>();
-    	    for (Category cat : categories) {
-    	        long count = questionRepository.countByCategory_Id(cat.getId());
-    	        questionCounts.put(cat.getId(), count);
-    	    }
-
-    	    model.addAttribute("categories", categories);
-    	    model.addAttribute("questionCounts", questionCounts);
-
-    	return "play/select_category";
+        List<Category> categories = categoryRepository.findAll();
+        Map<Long, Long> questionCounts = new HashMap<>();
+        for (Category cat : categories) {
+            long count = questionRepository.countByCategory_Id(cat.getId());
+            questionCounts.put(cat.getId(), count);
+        }
+        model.addAttribute("categories", categories);
+        model.addAttribute("questionCounts", questionCounts);
+        return "play/select_category";
     }
 
     /** 分野別出題（ID昇順） */
@@ -87,13 +82,17 @@ public class QuestionController {
             return "play/select_category";
         }
 
-        // 最初の問題（インデックス0）
         Question q = questions.get(0);
         model.addAttribute("question", q);
         model.addAttribute("choices", choiceRepository.findByQuestionId(q.getId()));
         model.addAttribute("categoryId", id);
         model.addAttribute("currentIndex", 0);
         model.addAttribute("total", questions.size());
+        
+        // ★ エラー回避：フラグを明示的にセット
+        model.addAttribute("isRandom", false);
+        model.addAttribute("isWeak", false);
+        
         return "play/question";
     }
 
@@ -110,19 +109,24 @@ public class QuestionController {
         model.addAttribute("question", q);
         model.addAttribute("choices", choiceRepository.findByQuestionId(q.getId()));
         model.addAttribute("categoryId", q.getCategory().getId());
-        model.addAttribute("isRandom", true); // ランダム出題フラグ
+        
+        // ★ エラー回避
+        model.addAttribute("isRandom", true);
+        model.addAttribute("isWeak", false);
+        
         return "play/question";
     }
 
-    /** 回答送信（分野別・ランダム両対応） */
+    /** 回答送信 */
     @PostMapping("/answer")
-    @Transactional // ★重要：履歴保存とスコア更新を「セット」で扱う
+    @Transactional
     public String submitAnswer(
             @RequestParam Long questionId,
             @RequestParam Long choiceId,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Integer currentIndex,
             @RequestParam(required = false, defaultValue = "false") boolean isRandom,
+            @RequestParam(required = false, defaultValue = "false") boolean isWeak, // 苦手モード引継ぎ用
             @AuthenticationPrincipal UserDetails userDetails,
             Model model
     ) {
@@ -135,7 +139,6 @@ public class QuestionController {
 
         boolean isCorrect = c.getChoiceText().equals(q.getCorrectAnswer());
 
-        // 解答履歴を保存
         UserAnswer answer = new UserAnswer();
         answer.setUser(user);
         answer.setQuestion(q);
@@ -144,7 +147,6 @@ public class QuestionController {
         answer.setAnsweredAt(LocalDateTime.now());
         userAnswerRepository.save(answer);
 
-        // スコアを更新
         Optional<Score> optScore = scoreRepository.findByUserIdAndCategoryId(user.getId(), q.getCategory().getId());
         Score score = optScore.orElse(new Score(user, q.getCategory(), 0, 0));
 
@@ -156,20 +158,18 @@ public class QuestionController {
         score.setUpdatedAt(LocalDateTime.now());
         scoreRepository.save(score);
 
-        // 共通のモデル属性
         model.addAttribute("question", q);
         model.addAttribute("choice", c);
         model.addAttribute("isCorrect", isCorrect);
         model.addAttribute("categoryId", categoryId);
         model.addAttribute("categoryName", q.getCategory().getName());
         model.addAttribute("isRandom", isRandom);
+        model.addAttribute("isWeak", isWeak);
 
-        // 分野別出題なら次の問題をチェック
-        if (!isRandom && categoryId != null && currentIndex != null) {
+        if (!isRandom && !isWeak && categoryId != null && currentIndex != null) {
             List<Question> questions = questionRepository.findByCategory_IdOrderByIdAsc(categoryId);
             int nextIndex = currentIndex + 1;
             boolean hasNext = nextIndex < questions.size();
-
             model.addAttribute("nextIndex", nextIndex);
             model.addAttribute("hasNext", hasNext);
         }
@@ -184,18 +184,17 @@ public class QuestionController {
             @RequestParam int index,
             Model model
     ) {
-    	List<Question> questions = questionRepository.findByCategory_IdOrderByIdAsc(categoryId);
+        List<Question> questions = questionRepository.findByCategory_IdOrderByIdAsc(categoryId);
 
         if (index >= questions.size()) {
-            // ★ finished.html の代わりに result.html に完了メッセージを表示
             Category cat = categoryRepository.findById(categoryId)
                     .orElseThrow(() -> new RuntimeException("カテゴリが存在しません"));
             model.addAttribute("categoryName", cat.getName());
             model.addAttribute("hasNext", false);
             model.addAttribute("isRandom", false);
-            model.addAttribute("isCorrect", true); // ダミー値（画面遷移のため）
+            model.addAttribute("isWeak", false);
+            model.addAttribute("isCorrect", true);
             return "play/result";
-    	
         }
 
         Question q = questions.get(index);
@@ -204,6 +203,11 @@ public class QuestionController {
         model.addAttribute("categoryId", categoryId);
         model.addAttribute("currentIndex", index);
         model.addAttribute("total", questions.size());
+        
+        // ★ エラー回避
+        model.addAttribute("isRandom", false);
+        model.addAttribute("isWeak", false);
+        
         return "play/question";
     }
 }

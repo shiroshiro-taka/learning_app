@@ -12,7 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.example.learning_app.entity.Category;
-import com.example.learning_app.entity.ExamResult; // 👈 追加
+import com.example.learning_app.entity.ExamResult;
 import com.example.learning_app.entity.UserAnswer;
 import com.example.learning_app.repository.CategoryRepository;
 import com.example.learning_app.repository.ExamResultRepository;

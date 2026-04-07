@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.learning_app.entity.Choice;
 import com.example.learning_app.entity.Question;
+import com.example.learning_app.entity.UserAnswer;
 import com.example.learning_app.repository.CategoryRepository;
 import com.example.learning_app.repository.ChoiceRepository;
 import com.example.learning_app.repository.QuestionRepository;
+import com.example.learning_app.repository.ScoreRepository;
 import com.example.learning_app.repository.UserAnswerRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -33,7 +35,8 @@ public class AdminQuestionController {
     private final QuestionRepository questionRepository;
     private final CategoryRepository categoryRepository;
     private final ChoiceRepository choiceRepository;
-    private final UserAnswerRepository userAnswerRepository; // 追加
+    private final UserAnswerRepository userAnswerRepository;
+    private final ScoreRepository scoreRepository;
 
     // 一覧
     @GetMapping
@@ -60,6 +63,7 @@ public class AdminQuestionController {
 
     // 登録
     @PostMapping
+    @Transactional
     public String create(@ModelAttribute Question question, @RequestParam int correctChoiceIndex) {
         if (question.getChoices() != null) {
             List<Choice> filteredChoices = new ArrayList<>(
@@ -97,64 +101,100 @@ public class AdminQuestionController {
         return "admin/questions/form";
     }
 
-    // 更新
+    // 更新：過去の回答を削除し、スコアを調整した上でデータを書き換える
     @PostMapping("/{id}")
     @Transactional
     public String update(@PathVariable Long id, @ModelAttribute Question question, @RequestParam(required = false) Integer correctChoiceIndex) {
         Question existing = questionRepository.findById(id).orElseThrow();
+        Long categoryId = existing.getCategory().getId();
+
+        // 1. 回答履歴を消す前に、ユーザーごとの累計スコアを減算
+        adjustUserScoresBeforeDelete(id, categoryId);
+
+        // 2. 外部キー制約を回避するため、まず正解IDの参照を解除
+        existing.setCorrectChoiceId(null);
+        existing.setCorrectAnswer(null);
+        questionRepository.saveAndFlush(existing);
+
+        // 3. 回答履歴と古い選択肢を一掃
+        userAnswerRepository.deleteByQuestionId(id);
+        choiceRepository.deleteByQuestionId(id);
+
+        // 4. 基本情報の更新
         existing.setQuestionText(question.getQuestionText());
         existing.setCategory(question.getCategory());
         existing.setExplanation(question.getExplanation());
 
-        // 使用されていない古い選択肢を整理（履歴があるものは残す等、既存ロジックを維持）
-        List<Choice> oldChoices = choiceRepository.findByQuestionId(id);
-        for (Choice oldChoice : oldChoices) {
-            if (!choiceRepository.isChoiceUsedByUserAnswers(oldChoice.getId())) {
-                choiceRepository.delete(oldChoice);
-            }
-        }
-
+        // 5. 新しい選択肢の登録
         List<Choice> savedChoices = new ArrayList<>();
         if (question.getChoices() != null) {
             for (Choice c : question.getChoices()) {
                 if (c.getChoiceText() != null && !c.getChoiceText().trim().isEmpty()) {
                     c.setQuestion(existing);
+                    c.setId(null); // 明示的に新規登録扱いにする
                     savedChoices.add(choiceRepository.save(c));
                 }
             }
         }
 
+        // 6. 新しい正解IDのセット
         if (correctChoiceIndex != null && correctChoiceIndex >= 0 && correctChoiceIndex < savedChoices.size()) {
             Choice correct = savedChoices.get(correctChoiceIndex);
             existing.setCorrectChoiceId(correct.getId());
             existing.setCorrectAnswer(correct.getChoiceText());
         }
+
         questionRepository.save(existing);
         return "redirect:/admin/questions";
     }
 
+    // 削除：関連データを全て消去する
     @PostMapping("/{id}/delete")
     @Transactional
     public String delete(@PathVariable Long id) {
-        // 1. まずQuestionを読み込む
         Question existing = questionRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Question not found"));
+        Long categoryId = existing.getCategory().getId();
 
-        // 2. Questionが持っている「正解選択肢ID」の参照を null にして保存
-        // これをしないと、choices を消すときに「まだQuestionの正解IDとして使われてる」と怒られます
+        // 1. スコアの調整
+        adjustUserScoresBeforeDelete(id, categoryId);
+
+        // 2. 参照の解除
         existing.setCorrectChoiceId(null);
         existing.setCorrectAnswer(null);
-        questionRepository.saveAndFlush(existing); // Flushして即座にDBへ反映
+        questionRepository.saveAndFlush(existing);
 
-        // 3. ユーザーの解答履歴を削除（ここが一番外側の制約）
+        // 3. 物理削除（回答 -> 選択肢 -> 問題）
         userAnswerRepository.deleteByQuestionId(id);
-
-        // 4. 選択肢を削除
         choiceRepository.deleteByQuestionId(id);
-
-        // 5. 最後に問題本体を削除
         questionRepository.deleteById(id);
 
         return "redirect:/admin/questions";
+    }
+
+    /**
+     * 指定した問題に対するユーザーの回答状況を確認し、
+     * scoresテーブルのカウントをマイナスする共通処理
+     */
+    private void adjustUserScoresBeforeDelete(Long questionId, Long categoryId) {
+        Question q = new Question();
+        q.setId(questionId);
+        // userAnswerRepository.findByQuestion を使用して該当する回答を取得
+        List<UserAnswer> answers = userAnswerRepository.findByQuestion(q);
+
+        for (UserAnswer answer : answers) {
+            scoreRepository.findByUserIdAndCategoryId(answer.getUser().getId(), categoryId)
+                .ifPresent(score -> {
+                    // UserAnswerエンティティに定義されているヘルパーメソッド isCorrect() を使用
+                    if (answer.isCorrect()) {
+                        score.setCorrectCount(Math.max(0, score.getCorrectCount() - 1));
+                    } else {
+                        score.setWrongCount(Math.max(0, score.getWrongCount() - 1));
+                    }
+                    // 必要に応じて updated_at をセット
+                    score.setUpdatedAt(LocalDateTime.now());
+                    scoreRepository.save(score);
+                });
+        }
     }
 }

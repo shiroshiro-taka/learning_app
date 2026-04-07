@@ -1,5 +1,7 @@
 package com.example.learning_app.repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,4 +30,6 @@ public interface UserMockExamRepository extends JpaRepository<UserMockExam, Long
     /* * 【参考】: 以前のUserMockExamServiceで利用したエンティティ引数バージョン
      * Optional<UserMockExam> findByUserAndMockExamAndFinishedAtIsNull(Users user, MockExam mockExam);
      */
+	List<UserMockExam> findByUserIdAndFinishedAtBetween(Long userId, LocalDateTime start, LocalDateTime end);
+
 }

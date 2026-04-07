@@ -19,4 +19,5 @@ public interface ScoreRepository extends JpaRepository<Score, Long> {
     
     Optional<Score> findByUserIdAndCategoryId(Long userId, Long categoryId);
     
+    void deleteByUserId(Long userId);
 }

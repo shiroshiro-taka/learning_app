@@ -3,6 +3,7 @@ package com.example.learning_app.controller;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -11,20 +12,24 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.learning_app.entity.Users;
+import com.example.learning_app.repository.ScoreRepository;
+import com.example.learning_app.repository.UserAnswerRepository;
 import com.example.learning_app.repository.UsersRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/admin/users")
 @PreAuthorize("hasRole('ADMIN')")
+@RequiredArgsConstructor // コンストラクタを自動生成（Lombok使用）
 public class AdminUserController {
 
     private final UsersRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public AdminUserController(UsersRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final UserAnswerRepository userAnswerRepository;
+    private final ScoreRepository scoreRepository;
+    // 必要に応じて追加
+    // private final UserMockExamRepository userMockExamRepository; 
 
     // 一覧表示
     @GetMapping
@@ -42,6 +47,7 @@ public class AdminUserController {
 
     // 登録処理
     @PostMapping("/new")
+    @Transactional
     public String createUser(@ModelAttribute Users user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
@@ -58,12 +64,14 @@ public class AdminUserController {
 
     // 更新処理
     @PostMapping("/edit/{id}")
+    @Transactional
     public String updateUser(@PathVariable Long id, @ModelAttribute Users updatedUser) {
         Users user = userRepository.findById(id).orElseThrow();
         user.setUsername(updatedUser.getUsername());
         user.setRole(updatedUser.getRole());
 
-        if (!updatedUser.getPassword().isEmpty()) {
+        // パスワードが入力されている場合のみ更新
+        if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
         }
 
@@ -71,10 +79,27 @@ public class AdminUserController {
         return "redirect:/admin/users";
     }
 
-    // 削除
+    // 削除処理（関連データをすべて消してからユーザーを消す）
     @PostMapping("/delete/{id}")
+    @Transactional
     public String deleteUser(@PathVariable Long id) {
-        userRepository.deleteById(id);
+        Users user = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 1. 回答履歴の削除 (user_id で削除)
+        // ※Repositoryに deleteByUserId(Long userId) が必要です
+        userAnswerRepository.deleteByUserId(id);
+
+        // 2. スコア情報の削除
+        // ※Repositoryに deleteByUserId(Long userId) が必要です
+        scoreRepository.deleteByUserId(id);
+
+        // 3. (オプション) 模擬試験履歴などがあればそれも削除
+        // userMockExamRepository.deleteByUserId(id);
+
+        // 4. 最後にユーザー本体を削除
+        userRepository.delete(user);
+
         return "redirect:/admin/users";
     }
 }
