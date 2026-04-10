@@ -38,8 +38,14 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
     
     // --- ★ 追加：外部キー制約エラーを回避するための削除メソッド ---
     @Modifying
+    @Query("DELETE FROM UserAnswer ua WHERE ua.userMockExam.mockExam.id = :mockExamId")
+    void deleteByMockExamId(@Param("mockExamId") Long mockExamId);
+    
+    
+    @Modifying
     @Transactional
     @Query("DELETE FROM UserAnswer ua WHERE ua.question.id = :questionId")
     void deleteByQuestionId(@Param("questionId") Long questionId);
     void deleteByUserId(Long userId);
+   
 }

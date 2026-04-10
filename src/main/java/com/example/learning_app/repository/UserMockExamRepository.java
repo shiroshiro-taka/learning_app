@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.learning_app.entity.UserMockExam;
@@ -32,4 +35,7 @@ public interface UserMockExamRepository extends JpaRepository<UserMockExam, Long
      */
 	List<UserMockExam> findByUserIdAndFinishedAtBetween(Long userId, LocalDateTime start, LocalDateTime end);
 
+	@Modifying
+	@Query("DELETE FROM UserMockExam ume WHERE ume.mockExam.id = :mockExamId")
+	void deleteByMockExamId(@Param("mockExamId") Long mockExamId);
 }
