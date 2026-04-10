@@ -10,7 +10,7 @@
         :root {
             --calendar-border: #e0e0e0;
             --today-border: #228be6;
-            --selected-border: #ff922b; /* 選択日はオレンジ色で強調 */
+            --selected-border: #ff922b;
             --sunday-color: #fa5252;
             --saturday-color: #4dabf7;
             --level-0: #ffffff;
@@ -33,7 +33,6 @@
         .level-3 { background-color: var(--level-3) !important; }
         .level-4 { background-color: var(--level-4) !important; }
         
-        /* 凡例用スタイル */
         .legend-item { display: flex; align-items: center; font-size: 0.75rem; color: #6c757d; margin-left: 8px; }
         .legend-color { width: 12px; height: 12px; border-radius: 2px; margin-right: 4px; border: 1px solid rgba(0,0,0,0.05); }
 
@@ -47,7 +46,7 @@
             color: white !important; 
         }
 
-        /* 「選択された日」のスタイル：目立つオレンジの太枠 */
+        /* 「選択された日」のスタイル */
         .selected-day { 
             outline: 4px solid var(--selected-border) !important; 
             outline-offset: -4px;
@@ -104,13 +103,14 @@
                         <span th:text="${name}">月</span>
                     </div>
 
+                    <!-- 前月パディング -->
                     <div th:each="pad : ${paddingDays}" class="calendar-day-cell prev-month-day"></div>
 
+                    <!-- 当月の日付 -->
                     <div th:each="day, stat : ${calendarDays}" 
                          class="calendar-day-cell clickable-day"
                          th:attr="data-date=${day.date}"
-                         th:classappend="${day.answerCount >= 50 ? 'level-4' : (day.answerCount >= 20 ? 'level-3' : (day.answerCount >= 10 ? 'level-2' : (day.answerCount >= 1 ? 'level-1' : 'level-0')))} 
-                                        + (${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd') == day.date.toString()} ? ' is-today' : '')">
+                         th:classappend="${day.answerCount >= 50 ? 'level-4' : (day.answerCount >= 20 ? 'level-3' : (day.answerCount >= 10 ? 'level-2' : (day.answerCount >= 1 ? 'level-1' : 'level-0')))}">
                         
                         <div class="day-num" th:text="${day.dayOfMonth}"
                              th:classappend="${(paddingDays.size() + stat.index) % 7 == 0 ? 'sun' : ((paddingDays.size() + stat.index + 1) % 7 == 0 ? 'sat' : '')}">
@@ -177,22 +177,33 @@
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
         const days = document.querySelectorAll('.clickable-day');
-        const todayStr = /*[[${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}]]*/ '';
+        
+        // ブラウザ側でJST（日本時間）の今日を算出
+        const now = new Date();
+        const jstTime = now.getTime() + (now.getTimezoneOffset() + 540) * 60000;
+        const jstToday = new Date(jstTime);
+        const todayStr = jstToday.toISOString().split('T')[0];
+
         let initialCell = null;
 
         days.forEach(day => {
+            const dateStr = day.getAttribute('data-date');
+
+            // 「今日」にクラスを付与
+            if (dateStr === todayStr) {
+                day.classList.add('is-today');
+                initialCell = day;
+            }
+
             day.addEventListener('click', function() {
                 days.forEach(d => d.classList.remove('selected-day'));
                 this.classList.add('selected-day');
                 const date = this.getAttribute('data-date');
                 if (date) loadDailyDetail(date);
             });
-            
-            if (day.getAttribute('data-date') === todayStr) {
-                initialCell = day;
-            }
         });
 
+        // 初期表示: 今日がある場合は今日、なければ月初を選択
         if (initialCell) {
             initialCell.click();
         } else if (days.length > 0) {
@@ -234,7 +245,7 @@
                     mockListContainer.innerHTML = '<p class="text-muted py-4 mb-0 text-center small">この日の模擬試験データはありません。</p>';
                 }
                 
-                setTimeout(() => detailArea.classList.add('show'), 10);
+                detailArea.classList.add('show');
             });
     }
 </script>
