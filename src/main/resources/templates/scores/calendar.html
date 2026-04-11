@@ -26,7 +26,6 @@
         .calendar-day-cell { min-height: 100px; padding: 8px; border-right: 1px solid var(--calendar-border); border-bottom: 1px solid var(--calendar-border); transition: all 0.2s; cursor: pointer; position: relative; }
         .calendar-day-cell:hover { filter: brightness(0.95); z-index: 1; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         
-        /* ヒートマップの色定義 */
         .level-0 { background-color: var(--level-0) !important; }
         .level-1 { background-color: var(--level-1) !important; border: 1px solid #d1d5da; }
         .level-2 { background-color: var(--level-2) !important; }
@@ -36,7 +35,6 @@
         .legend-item { display: flex; align-items: center; font-size: 0.75rem; color: #6c757d; margin-left: 8px; }
         .legend-color { width: 12px; height: 12px; border-radius: 2px; margin-right: 4px; border: 1px solid rgba(0,0,0,0.05); }
 
-        /* 「今日」のスタイル：青い境界線 */
         .is-today { 
             box-shadow: inset 0 0 0 3px var(--today-border) !important; 
             z-index: 2; 
@@ -46,7 +44,6 @@
             color: white !important; 
         }
 
-        /* 「選択された日」のスタイル */
         .selected-day { 
             outline: 4px solid var(--selected-border) !important; 
             outline-offset: -4px;
@@ -74,7 +71,6 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10">
-            <!-- ヘッダー部分 -->
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end mb-4 gap-3">
                 <div>
                     <div class="d-flex align-items-baseline gap-3">
@@ -96,17 +92,14 @@
                 </div>
             </div>
 
-            <!-- カレンダー本体 -->
             <div class="card calendar-card shadow mb-5">
                 <div class="calendar-grid">
                     <div th:each="name, stat : ${dayOfWeekNames}" class="calendar-header-cell" th:classappend="${stat.index == 0 ? 'sun' : (stat.index == 6 ? 'sat' : '')}">
                         <span th:text="${name}">月</span>
                     </div>
 
-                    <!-- 前月パディング -->
                     <div th:each="pad : ${paddingDays}" class="calendar-day-cell prev-month-day"></div>
 
-                    <!-- 当月の日付 -->
                     <div th:each="day, stat : ${calendarDays}" 
                          class="calendar-day-cell clickable-day"
                          th:attr="data-date=${day.date}"
@@ -125,7 +118,6 @@
                 </div>
             </div>
             
-            <!-- 詳細エリア -->
             <div id="detail-area" class="d-none">
                 <div class="card shadow-sm p-4 bg-white" style="border-radius: 15px;">
                     <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
@@ -178,18 +170,19 @@
     document.addEventListener('DOMContentLoaded', function() {
         const days = document.querySelectorAll('.clickable-day');
         
-        // ブラウザ側でJST（日本時間）の今日を算出
-        const now = new Date();
-        const jstTime = now.getTime() + (now.getTimezoneOffset() + 540) * 60000;
-        const jstToday = new Date(jstTime);
-        const todayStr = jstToday.toISOString().split('T')[0];
+        /** * 修正箇所:
+         * toISOString() を使用せず、Intl.DateTimeFormat で日本時間の yyyy-mm-dd を取得します。
+         * これにより深夜0時〜9時の間の判定ズレを防ぎます。
+         */
+        const todayStr = new Intl.DateTimeFormat('sv-SE', { 
+            timeZone: 'Asia/Tokyo' 
+        }).format(new Date()); 
 
         let initialCell = null;
 
         days.forEach(day => {
             const dateStr = day.getAttribute('data-date');
 
-            // 「今日」にクラスを付与
             if (dateStr === todayStr) {
                 day.classList.add('is-today');
                 initialCell = day;
@@ -203,7 +196,6 @@
             });
         });
 
-        // 初期表示: 今日がある場合は今日、なければ月初を選択
         if (initialCell) {
             initialCell.click();
         } else if (days.length > 0) {
