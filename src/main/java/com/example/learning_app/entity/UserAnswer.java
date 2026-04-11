@@ -12,8 +12,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import org.hibernate.annotations.CreationTimestamp;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -64,7 +62,6 @@ public class UserAnswer {
         return Boolean.TRUE.equals(this.correct);
     }
 
-    @CreationTimestamp
     @Column(name = "answered_at", nullable = false, updatable = false)
     private LocalDateTime answeredAt; // 解答日時
     
