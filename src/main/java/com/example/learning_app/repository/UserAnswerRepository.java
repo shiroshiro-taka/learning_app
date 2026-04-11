@@ -17,7 +17,6 @@ import com.example.learning_app.entity.Users;
 
 public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
 
-    // ... 既存のメソッド ...
     List<UserAnswer> findByUser(Users user);
     List<UserAnswer> findByUser_Id(Long userId);
     List<UserAnswer> findByQuestion(Question question);
@@ -26,26 +25,31 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
     Optional<UserAnswer> findByUserMockExam_IdAndQuestion_Id(Long userMockExamId, Long questionId);
     List<UserAnswer> findByUserMockExam_Id(Long userMockExamId);
 
-    @Query("SELECT new map(CAST(u.answeredAt AS date) as date, COUNT(u) as count, " +
-            "SUM(CASE WHEN u.correct = true THEN 1 ELSE 0 END) * 100.0 / COUNT(u) as accuracy) " +
-            "FROM UserAnswer u " +
-            "WHERE u.user.id = :userId AND u.answeredAt BETWEEN :start AND :end " +
-            "GROUP BY CAST(u.answeredAt AS date)")
-     List<Map<String, Object>> findDailyStats(@Param("userId") Long userId, 
-                                              @Param("start") LocalDateTime start, 
-                                              @Param("end") LocalDateTime end);
+    /**
+     * 【修正ポイント】
+     * データベースのタイムゾーン(UTC)を日本時間(+09:00)に変換して日付集計します。
+     * JPQLでは時間変換関数に制限があるため、Native Queryを使用します。
+     */
+    @Query(value = "SELECT " +
+            "  DATE(CONVERT_TZ(answered_at, '+00:00', '+09:00')) as date, " +
+            "  COUNT(*) as count, " +
+            "  AVG(CASE WHEN is_correct = true THEN 100.0 ELSE 0.0 END) as accuracy " +
+            "FROM user_answers " +
+            "WHERE user_id = :userId AND answered_at BETWEEN :start AND :end " +
+            "GROUP BY DATE(CONVERT_TZ(answered_at, '+00:00', '+09:00'))", 
+            nativeQuery = true)
+    List<Map<String, Object>> findDailyStats(@Param("userId") Long userId, 
+                                             @Param("start") LocalDateTime start, 
+                                             @Param("end") LocalDateTime end);
     
-    
-    // --- ★ 追加：外部キー制約エラーを回避するための削除メソッド ---
     @Modifying
     @Query("DELETE FROM UserAnswer ua WHERE ua.userMockExam.mockExam.id = :mockExamId")
     void deleteByMockExamId(@Param("mockExamId") Long mockExamId);
-    
     
     @Modifying
     @Transactional
     @Query("DELETE FROM UserAnswer ua WHERE ua.question.id = :questionId")
     void deleteByQuestionId(@Param("questionId") Long questionId);
+    
     void deleteByUserId(Long userId);
-   
 }
