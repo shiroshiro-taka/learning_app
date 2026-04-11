@@ -6,12 +6,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,50 +31,27 @@ public class CalendarService {
     @Autowired
     private UserMockExamRepository userMockExamRepository;
 
-    private static final ZoneId TOKYO_ZONE = ZoneId.of("Asia/Tokyo");
-
     /**
      * カレンダー表示用の月間集計データを取得
+     * DBのCAST関数によるタイムゾーンのブレを避けるため、1日ずつJava側で期間を確定して集計します。
      */
     public List<CalendarDayDto> getCalendarData(Long userId, YearMonth yearMonth) {
         LocalDate startOfMonth = yearMonth.atDay(1);
         LocalDate endOfMonth = yearMonth.atEndOfMonth();
         
-        // ★修正: LocalDate を日本時間の開始・終了に変換
-        LocalDateTime startDateTime = startOfMonth.atStartOfDay(TOKYO_ZONE).toLocalDateTime();
-        LocalDateTime endDateTime = endOfMonth.atTime(LocalTime.MAX).atZone(TOKYO_ZONE).toLocalDateTime();
-
-        List<Map<String, Object>> stats = userAnswerRepository.findDailyStats(userId, startDateTime, endDateTime);
-
-        Map<LocalDate, Map<String, Object>> statsMap = stats.stream()
-            .collect(Collectors.toMap(
-                s -> {
-                    Object dateObj = s.get("date") != null ? s.get("date") : s.get("DATE");
-                    if (dateObj == null) return LocalDate.MIN;
-                    if (dateObj instanceof java.time.LocalDate) return (java.time.LocalDate) dateObj;
-                    if (dateObj instanceof java.sql.Date) return ((java.sql.Date) dateObj).toLocalDate();
-                    try {
-                        return LocalDate.parse(dateObj.toString().substring(0, 10));
-                    } catch (Exception e) {
-                        return LocalDate.MIN;
-                    }
-                },
-                s -> s,
-                (v1, v2) -> v1
-            ));
-
         List<CalendarDayDto> calendarDays = new ArrayList<>();
+
+        // 月の開始日から終了日までループ
         for (LocalDate date = startOfMonth; !date.isAfter(endOfMonth); date = date.plusDays(1)) {
-            Map<String, Object> dayData = statsMap.get(date);
-            if (dayData != null) {
-                Object countObj = dayData.get("count") != null ? dayData.get("count") : dayData.get("COUNT");
-                Object accuracyObj = dayData.get("accuracy") != null ? dayData.get("accuracy") : dayData.get("ACCURACY");
-                long count = (countObj != null) ? ((Number) countObj).longValue() : 0L;
-                double accuracy = (accuracyObj != null) ? ((Number) accuracyObj).doubleValue() : 0.0;
-                calendarDays.add(new CalendarDayDto(date, count, accuracy));
-            } else {
-                calendarDays.add(new CalendarDayDto(date, 0L, 0.0));
-            }
+            // その日の日本時間 00:00:00 〜 23:59:59.999 を作成
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+            // 修正されたRepositoryメソッドを使用
+            long count = userAnswerRepository.countByUserIdAndAnsweredAtBetween(userId, startOfDay, endOfDay);
+            Double accuracy = userAnswerRepository.calculateAccuracyByUserIdAndAnsweredAtBetween(userId, startOfDay, endOfDay);
+            
+            calendarDays.add(new CalendarDayDto(date, count, accuracy != null ? accuracy : 0.0));
         }
         return calendarDays;
     }
@@ -87,27 +62,24 @@ public class CalendarService {
     public DailyDetailDto getDailyDetail(Long userId, LocalDate date) {
         String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd (E)", Locale.JAPANESE));
 
-        // ★修正: LocalDate（引数）を日本時間基準の開始/終了 LocalDateTime に変換
-        // JVM が UTC の場合でも、これで「日本時間の 00:00〜23:59」を正確に指定できます
-        LocalDateTime startOfDay = date.atStartOfDay(TOKYO_ZONE).toLocalDateTime();
-        LocalDateTime endOfDay = date.atTime(LocalTime.MAX).atZone(TOKYO_ZONE).toLocalDateTime();
+        // 日本時間の 00:00:00 と 23:59:59.999 を生成
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
         
-        List<Map<String, Object>> stats = userAnswerRepository.findDailyStats(userId, startOfDay, endOfDay);
+        // 1. 回答数と正答率の取得（DBの日付関数に頼らない）
+        long totalCount = userAnswerRepository.countByUserIdAndAnsweredAtBetween(userId, startOfDay, endOfDay);
+        Double rawAccuracy = userAnswerRepository.calculateAccuracyByUserIdAndAnsweredAtBetween(userId, startOfDay, endOfDay);
         
-        long totalCount = 0;
         long correctCount = 0;
         double accuracy = 0.0;
 
-        if (stats != null && !stats.isEmpty()) {
-            Map<String, Object> dayData = stats.get(0);
-            Object countObj = dayData.get("count") != null ? dayData.get("count") : dayData.get("COUNT");
-            Object accuracyObj = dayData.get("accuracy") != null ? dayData.get("accuracy") : dayData.get("ACCURACY");
-            totalCount = (countObj != null) ? ((Number) countObj).longValue() : 0L;
-            double rawAccuracy = (accuracyObj != null) ? ((Number) accuracyObj).doubleValue() : 0.0;
+        if (totalCount > 0 && rawAccuracy != null) {
             accuracy = BigDecimal.valueOf(rawAccuracy).setScale(1, RoundingMode.HALF_UP).doubleValue();
+            // 正答数を算出（逆算）
             correctCount = Math.round(totalCount * (rawAccuracy / 100.0));
         }
 
+        // 2. 模擬試験結果の取得
         List<UserMockExam> finishedExams = userMockExamRepository.findByUserIdAndFinishedAtBetween(userId, startOfDay, endOfDay);
         
         List<MockResultDto> mockExams = finishedExams.stream()

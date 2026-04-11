@@ -2,7 +2,6 @@ package com.example.learning_app.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,7 +16,6 @@ import com.example.learning_app.entity.Users;
 
 public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
 
-    // ... 既存のメソッド ...
     List<UserAnswer> findByUser(Users user);
     List<UserAnswer> findByUser_Id(Long userId);
     List<UserAnswer> findByQuestion(Question question);
@@ -26,26 +24,35 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
     Optional<UserAnswer> findByUserMockExam_IdAndQuestion_Id(Long userMockExamId, Long questionId);
     List<UserAnswer> findByUserMockExam_Id(Long userMockExamId);
 
-    @Query("SELECT new map(CAST(u.answeredAt AS date) as date, COUNT(u) as count, " +
-            "SUM(CASE WHEN u.correct = true THEN 1 ELSE 0 END) * 100.0 / COUNT(u) as accuracy) " +
-            "FROM UserAnswer u " +
-            "WHERE u.user.id = :userId AND u.answeredAt BETWEEN :start AND :end " +
-            "GROUP BY CAST(u.answeredAt AS date)")
-     List<Map<String, Object>> findDailyStats(@Param("userId") Long userId, 
-                                              @Param("start") LocalDateTime start, 
-                                              @Param("end") LocalDateTime end);
-    
-    
-    // --- ★ 追加：外部キー制約エラーを回避するための削除メソッド ---
+    /**
+     * 指定された期間内（start 〜 end）の総回答数を取得
+     * DB側の日付関数を使わず、Javaから渡された LocalDateTime を直接比較します。
+     */
+    @Query("SELECT COUNT(u) FROM UserAnswer u " +
+           "WHERE u.user.id = :userId AND u.answeredAt BETWEEN :start AND :end")
+    long countByUserIdAndAnsweredAtBetween(@Param("userId") Long userId, 
+                                           @Param("start") LocalDateTime start, 
+                                           @Param("end") LocalDateTime end);
+
+    /**
+     * 指定された期間内（start 〜 end）の正答率（%）を取得
+     */
+    @Query("SELECT COALESCE(SUM(CASE WHEN u.correct = true THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(u), 0), 0.0) " +
+           "FROM UserAnswer u " +
+           "WHERE u.user.id = :userId AND u.answeredAt BETWEEN :start AND :end")
+    Double calculateAccuracyByUserIdAndAnsweredAtBetween(@Param("userId") Long userId, 
+                                                         @Param("start") LocalDateTime start, 
+                                                         @Param("end") LocalDateTime end);
+
+    // --- 既存の削除メソッド ---
     @Modifying
     @Query("DELETE FROM UserAnswer ua WHERE ua.userMockExam.mockExam.id = :mockExamId")
     void deleteByMockExamId(@Param("mockExamId") Long mockExamId);
-    
     
     @Modifying
     @Transactional
     @Query("DELETE FROM UserAnswer ua WHERE ua.question.id = :questionId")
     void deleteByQuestionId(@Param("questionId") Long questionId);
+    
     void deleteByUserId(Long userId);
-   
 }
