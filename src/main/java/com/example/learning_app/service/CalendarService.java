@@ -35,13 +35,16 @@ public class CalendarService {
 
     private static final ZoneId TOKYO_ZONE = ZoneId.of("Asia/Tokyo");
 
+    /**
+     * カレンダー表示用の月間集計データを取得
+     */
     public List<CalendarDayDto> getCalendarData(Long userId, YearMonth yearMonth) {
         LocalDate startOfMonth = yearMonth.atDay(1);
         LocalDate endOfMonth = yearMonth.atEndOfMonth();
         
-        // 日本時間の00:00:00から23:59:59までを指定
-        LocalDateTime startDateTime = startOfMonth.atStartOfDay();
-        LocalDateTime endDateTime = endOfMonth.atTime(LocalTime.MAX);
+        // ★修正: LocalDate を日本時間の開始・終了に変換
+        LocalDateTime startDateTime = startOfMonth.atStartOfDay(TOKYO_ZONE).toLocalDateTime();
+        LocalDateTime endDateTime = endOfMonth.atTime(LocalTime.MAX).atZone(TOKYO_ZONE).toLocalDateTime();
 
         List<Map<String, Object>> stats = userAnswerRepository.findDailyStats(userId, startDateTime, endDateTime);
 
@@ -78,12 +81,16 @@ public class CalendarService {
         return calendarDays;
     }
 
+    /**
+     * 特定の日の詳細データを取得
+     */
     public DailyDetailDto getDailyDetail(Long userId, LocalDate date) {
         String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd (E)", Locale.JAPANESE));
 
-        // 検索条件を日本時間の範囲に設定
-        LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+        // ★修正: LocalDate（引数）を日本時間基準の開始/終了 LocalDateTime に変換
+        // JVM が UTC の場合でも、これで「日本時間の 00:00〜23:59」を正確に指定できます
+        LocalDateTime startOfDay = date.atStartOfDay(TOKYO_ZONE).toLocalDateTime();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX).atZone(TOKYO_ZONE).toLocalDateTime();
         
         List<Map<String, Object>> stats = userAnswerRepository.findDailyStats(userId, startOfDay, endOfDay);
         
