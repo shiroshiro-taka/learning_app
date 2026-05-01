@@ -22,6 +22,11 @@
     }
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+  
+  <!-- ▼ 数式表示（MathJax）のためのスクリプトを追加 -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
   <style>
     .preserve-format { white-space: pre-wrap; }
     .hljs { padding: 0.75em; background: #f3f3f3; border-radius: 0.5rem; line-height: 1.4; overflow-x: auto; }
@@ -29,6 +34,11 @@
         .equal-height-container { align-items: stretch; }
         .left, .right { display: flex; flex-direction: column; height: 100%; }
         .right-content { flex-grow: 1; overflow-y: auto; }
+    }
+    /* MathJaxの表示を少し整える設定 */
+    .mjx-container {
+        font-size: 1.1em !important;
+        margin: 0.5em 0;
     }
   </style>
 </head>
@@ -51,6 +61,7 @@
 
       <div>
         <h3 class="text-lg font-semibold text-gray-700 mb-2">問題文</h3>
+        <!-- th:utext により、HTMLタグと数式テキストをそのまま出力 -->
         <div class="bg-gray-100 p-4 rounded-lg text-gray-800 preserve-format" th:utext="${question.questionText}"></div>
       </div>
 
@@ -94,7 +105,7 @@
         </div>
 
         <!-- ▼ 通常の分野別出題の場合 -->
-		<div th:if="${!(isRandom ?: false) and !(isWeak ?: false)}">
+        <div th:if="${!(isRandom ?: false) and !(isWeak ?: false)}">
           <div th:if="${hasNext}">
             <a th:href="@{/play/next(categoryId=${categoryId}, index=${nextIndex})}" class="w-full block text-center py-3 px-4 rounded-lg shadow-md text-white font-medium bg-primary-blue hover:bg-primary-blue-hover transition duration-150">
               ▶ 次の問題へ
