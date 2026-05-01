@@ -22,6 +22,10 @@
     }
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 <style>
     /* 画面全体の固定設定 */
     html, body {
@@ -107,7 +111,6 @@
 </head>
 <body>
 
-<!-- ヘッダー：1行でコンパクトに -->
 <header class="bg-white border-b flex items-center justify-between px-4 shadow-sm">
     <div class="flex items-center space-x-2 truncate">
         <span class="text-blue-600 font-bold text-sm">Exam:</span>
@@ -119,7 +122,6 @@
     </div>
 </header>
 
-<!-- メインエリア -->
 <main class="p-3">
     <div id="question-container" class="max-w-3xl mx-auto">
         <div th:each="q, iterStat : ${examQuestions}" 
@@ -157,9 +159,7 @@
     </div>
 </main>
 
-<!-- フッター：操作性を集中 -->
 <footer class="bg-dark-panel text-white pb-safe">
-    <!-- 解答状況：1行スクロール -->
     <div id="status-scroll-area" class="border-b border-gray-700">
         <div th:each="q, iterStat : ${examQuestions}" 
              class="q-status-btn relative" 
@@ -169,7 +169,6 @@
              onclick="showQuestion(this.getAttribute('data-index'))"></div>
     </div>
 
-    <!-- アクションボタン：押しやすく配置 -->
     <div class="flex items-center justify-between p-2">
         <div class="flex space-x-2">
             <button id="prev" class="w-12 h-10 flex items-center justify-center bg-gray-700 rounded-lg disabled:opacity-30">
@@ -191,7 +190,6 @@
     </div>
 </footer>
 
-<!-- 終了フォーム（非表示） -->
 <form th:action="@{/exam/finish}" method="post" id="finishForm" class="hidden">
     <input type="hidden" name="userExamId" th:value="${userExamId}" />
     <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}" />
@@ -229,6 +227,11 @@ function showQuestion(index) {
     $('.question-block').addClass('hidden');
     $('.question-block').eq(index).removeClass('hidden');
     
+    // ▼ ここに追加：問題を切り替えた後にMathJaxを再レンダリングさせる
+    if (window.MathJax) {
+        MathJax.typesetPromise();
+    }
+
     // UI更新
     $('#prev').prop('disabled', index === 0);
     $('#next').prop('disabled', index === questionsCount - 1);
