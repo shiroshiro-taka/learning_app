@@ -1,122 +1,45 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title th:text="${exam?.examName} + ' - 試験開始'">模擬試験</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    'primary-blue': '#1c55c8',
-                    'primary-blue-hover': '#1747a5',
-                    'success-green': '#10b981',
-                    'error-red': '#ef4444',
-                    'accent-yellow': '#facc15',
-                    'dark-panel': '#2d3748',
-                }
-            }
-        }
-    }
-</script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
-
-<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
-<style>
-    /* 画面全体の固定設定 */
-    html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background-color: #f3f4f6; /* gray-100 */
-    }
-    
-    body { 
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* ヘッダーの高さ抑制 */
-    header {
-        height: 50px;
-        flex-shrink: 0;
-    }
-
-    /* メインコンテンツエリア */
-    main {
-        flex: 1;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 20px;
-    }
-
-    /* フッター：スマホでの占有面積を最小限に */
-    footer {
-        flex-shrink: 0;
-        z-index: 50;
-    }
-
-    .preserve-format {
-        white-space: pre-wrap;
-        word-break: break-all;
-    }
-
-    /* 解答状況ボタンのコンテナ：スマホでは1行程度に制限しスクロール */
-    #status-scroll-area {
-        max-height: 44px; /* 1行分強 */
-        overflow-y: auto;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        padding: 4px;
-    }
-
-    .q-status-btn {
-        width: 32px;
-        height: 32px;
-        flex-shrink: 0;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: bold;
-        color: white;
-        background-color: #4b5563; /* gray-600 */
-        cursor: pointer;
-    }
-
-    .status-current { background-color: #facc15 !important; color: #1f2937 !important; border: 2px solid #1f2937; }
-    .status-answered { background-color: #10b981 !important; }
-    .status-review::after { content: "📌"; position: absolute; top: -4px; right: -4px; font-size: 10px; }
-
-    .choice-item {
-        transition: all 0.1s ease;
-        border: 2px solid #e5e7eb;
-    }
-    .selected-choice {
-        background-color: #eff6ff;
-        border-color: #3b82f6 !important;
-    }
-
-    /* highlight.js調整 */
-    .hljs { font-size: 13px; border-radius: 8px; }
-</style>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title th:text="${exam?.examName} + ' - 試験開始'">模擬試験</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: {
+            'primary-blue': '#1c55c8', 'primary-blue-hover': '#1747a5',
+            'success-green': '#10b981', 'error-red': '#ef4444',
+            'accent-yellow': '#facc15', 'dark-panel': '#2d3748',
+        }}}}
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background-color: #f3f4f6; }
+        body { display: flex; flex-direction: column; }
+        header { height: 50px; flex-shrink: 0; }
+        main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 20px; }
+        footer { flex-shrink: 0; z-index: 50; }
+        .preserve-format { white-space: pre-wrap; word-break: break-all; }
+        #status-scroll-area { max-height: 44px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; }
+        .q-status-btn { width: 32px; height: 32px; flex-shrink: 0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: white; background-color: #4b5563; cursor: pointer; }
+        .status-current { background-color: #facc15 !important; color: #1f2937 !important; border: 2px solid #1f2937; }
+        .status-answered { background-color: #10b981 !important; }
+        .status-review::after { content: "📌"; position: absolute; top: -4px; right: -4px; font-size: 10px; }
+        .choice-item { transition: all 0.1s ease; border: 2px solid #e5e7eb; }
+        .selected-choice { background-color: #eff6ff; border-color: #3b82f6 !important; }
+        .hljs { font-size: 13px; border-radius: 8px; }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 
 <header class="bg-white border-b flex items-center justify-between px-4 shadow-sm">
     <div class="flex items-center space-x-2 truncate">
         <span class="text-blue-600 font-bold text-sm">Exam:</span>
-        <h1 class="text-sm font-bold text-gray-800 truncate max-w-[120px] md:max-w-none" th:text="${exam.examName}">模擬試験1</h1>
+        <h1 class="text-sm font-bold text-gray-800 truncate" th:text="${exam.examName}">模擬試験</h1>
     </div>
     <div class="flex items-center bg-red-50 px-2 py-1 rounded border border-red-100">
-        <span class="text-xs mr-1">⌛</span>
         <span id="timer" class="text-red-600 font-mono font-bold text-sm">--:--</span>
     </div>
 </header>
@@ -125,202 +48,71 @@
     <div id="question-container" class="max-w-3xl mx-auto">
         <div th:each="q, iterStat : ${examQuestions}" 
              class="question-block bg-white rounded-xl shadow-sm border p-4 mb-4 hidden" 
-             th:id="'q-'+${q.question.id}" 
-             th:data-index="${iterStat.index}"
-             th:data-question-id="${q.question.id}">
-            
+             th:id="'q-'+${q.question.id}" th:data-index="${iterStat.index}">
             <div class="flex items-start mb-3">
-                <span class="text-lg font-black text-blue-700 mr-2" th:text="'問' + ${iterStat.count}">問1</span>
-                <div class="text-sm md:text-base font-bold text-gray-800 preserve-format leading-relaxed" th:utext="${q.question.questionText}">問題文</div>
+                <span class="text-lg font-black text-blue-700 mr-2" th:text="'問' + ${iterStat.count}"></span>
+                <div class="text-sm font-bold text-gray-800 preserve-format" th:utext="${q.question.questionText}"></div>
             </div>
-
             <div class="space-y-2">
-                <div th:each="c, cStat : ${q.question.choices}" 
-                     class="choice-item flex items-start p-3 rounded-lg cursor-pointer active:opacity-70"
+                <div th:each="c : ${q.question.choices}" 
+                     class="choice-item p-3 rounded-lg cursor-pointer"
                      th:onclick="'selectChoice(' + ${q.question.id} + ',' + ${c.id} + ')'"
                      th:id="'choice-box-' + ${c.id}">
-                    <input type="radio" 
-                           th:id="'radio-' + ${c.id}" 
-                           th:name="'q' + ${q.question.id}" 
-                           th:value="${c.id}"
-                           class="mt-1 w-4 h-4 text-blue-600 pointer-events-none">
-                    <label class="ml-3 text-sm text-gray-700 leading-snug cursor-pointer pointer-events-none" th:utext="${c.choiceText}">選択肢</label>
+                    <label th:utext="${c.choiceText}"></label>
                 </div>
             </div>
-            
-            <div class="mt-4 pt-3 border-t border-gray-100 flex justify-end">
-                <label class="flex items-center text-xs text-gray-500 font-bold bg-gray-50 px-3 py-2 rounded-full cursor-pointer">
-                    <input type="checkbox" th:id="'review-' + ${q.question.id}" class="review-check mr-2 w-4 h-4 rounded">
-                    後で見直す
-                </label>
-            </div>
+            <div class="mt-4 pt-3 border-t"><input type="checkbox" th:id="'review-' + ${q.question.id}" class="review-check"> 後で見直す</div>
         </div>
     </div>
 </main>
 
-<footer class="bg-dark-panel text-white pb-safe">
-    <div id="status-scroll-area" class="border-b border-gray-700">
-        <div th:each="q, iterStat : ${examQuestions}" 
-             class="q-status-btn relative" 
-             th:data-index="${iterStat.index}"
-             th:id="'status-btn-' + ${iterStat.index}"
-             th:text="${iterStat.count}"
-             onclick="showQuestion(this.getAttribute('data-index'))"></div>
-    </div>
-
-    <div class="flex items-center justify-between p-2">
-        <div class="flex space-x-2">
-            <button id="prev" class="w-12 h-10 flex items-center justify-center bg-gray-700 rounded-lg disabled:opacity-30">
-                <span class="text-xl">◀</span>
-            </button>
-            <button id="next" class="px-6 h-10 flex items-center justify-center bg-primary-blue rounded-lg font-bold disabled:opacity-30">
-                次へ
-            </button>
-        </div>
-        
-        <div class="flex space-x-2">
-            <button onclick="goToReview()" class="w-12 h-10 flex items-center justify-center bg-accent-yellow text-gray-900 rounded-lg font-bold">
-                🗂️
-            </button>
-            <button onclick="confirmFinish()" class="px-4 h-10 bg-error-red rounded-lg font-bold">
-                終了
-            </button>
-        </div>
+<footer class="bg-dark-panel text-white">
+    <div id="status-scroll-area"></div>
+    <div class="flex justify-between p-2">
+        <button id="prev" class="bg-gray-700 p-2 rounded">◀</button>
+        <button id="next" class="bg-primary-blue p-2 rounded">次へ</button>
+        <button onclick="confirmFinish()" class="bg-error-red p-2 rounded">終了</button>
     </div>
 </footer>
 
-<form th:action="@{/exam/finish}" method="post" id="finishForm" class="hidden">
-    <input type="hidden" name="userExamId" th:value="${userExamId}" />
-    <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-</form>
-
 <script th:inline="javascript">
 /*<![CDATA[*/
-let duration = /*[[${exam.durationMinutes}]]*/ 60;
-let userExamId = /*[[${userExamId}]]*/ 0;
 let questionsCount = /*[[${examQuestions.size()}]]*/ 0;
-let mockExamId = /*[[${exam.id}]]*/ 0;
-let existingAnswers = /*[[${existingAnswers}]]*/ [];
 let questionsData = [];
 /*[# th:each="q, iterStat : ${examQuestions}"]*/
 questionsData.push({ id: /*[[${q.question.id}]]*/ 0, index: /*[[${iterStat.index}]]*/ 0 });
 /*[/]*/
 
-let totalSeconds = duration * 60;
-let currentQuestionIndex = 0;
-let answerStatus = {};
-
-function updateTimer() {
-    let m = Math.floor(totalSeconds / 60);
-    let s = totalSeconds % 60;
-    $('#timer').text(`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
-    if (totalSeconds <= 0) $('#finishForm').submit();
-    else totalSeconds--;
-}
-
 function showQuestion(index) {
-    index = parseInt(index);
-    if (index < 0 || index >= questionsCount) return;
-    
-    currentQuestionIndex = index;
-    $('.question-block').addClass('hidden');
-    $('.question-block').eq(index).removeClass('hidden');
-    
-    // ▼ ここに追加：問題を切り替えた後にMathJaxを再レンダリングさせる
-    if (window.MathJax) {
-        MathJax.typesetPromise();
-    }
-
-    // UI更新
-    $('#prev').prop('disabled', index === 0);
-    $('#next').prop('disabled', index === questionsCount - 1);
-    
-    // 解答状況ボタンのハイライト
-    $('.q-status-btn').removeClass('status-current');
-    let btn = $('#status-btn-' + index);
-    btn.addClass('status-current');
-    
-    // 現在のボタンまで自動スクロール
-    let container = $('#status-scroll-area');
-    container.animate({ scrollLeft: btn.position().left + container.scrollLeft() - (container.width()/2) }, 200);
-
-    restoreState(questionsData[index].id);
-    $('main').scrollTop(0);
-}
-
-function selectChoice(qId, cId) {
-    $(`#q-${qId} .choice-item`).removeClass('selected-choice');
-    $(`#choice-box-${cId}`).addClass('selected-choice');
-    $(`#radio-${cId}`).prop('checked', true);
-    
-    let isReview = $(`#review-${qId}`).is(':checked');
-    sendAjax(qId, cId, isReview);
-}
-
-function restoreState(qId) {
-    let s = answerStatus[qId] || {};
-    $(`#q-${qId} .choice-item`).removeClass('selected-choice');
-    if (s.choiceId) {
-        $(`#choice-box-${s.choiceId}`).addClass('selected-choice');
-        $(`#radio-${s.choiceId}`).prop('checked', true);
-    }
-    $(`#review-${qId}`).prop('checked', !!s.review);
-}
-
-function sendAjax(qId, cId, isReview, isOnlyToggleReview = false) {
-    let token = /*[[${_csrf.token}]]*/ '';
-    $.ajax({
-        url: '/exam/answer',
-        type: 'POST',
-        data: { userExamId, questionId: qId, choiceId: cId, reviewFlag: isReview },
-        beforeSend: function(xhr) { xhr.setRequestHeader('X-CSRF-TOKEN', token); },
-        success: function() {
-            if (!answerStatus[qId]) answerStatus[qId] = {};
-            if (!isOnlyToggleReview) {
-                answerStatus[qId].answered = !!cId;
-                answerStatus[qId].choiceId = cId;
-            }
-            answerStatus[qId].review = isReview;
-            updateStatusUI(qId);
-        }
-    });
-}
-
-function updateStatusUI(qId) {
-    let idx = questionsData.findIndex(d => d.id == qId);
-    let s = answerStatus[qId];
-    let btn = $('#status-btn-' + idx);
-    btn.toggleClass('status-answered', !!s.answered);
-    btn.toggleClass('status-review', !!s.review);
-}
-
-$(document).on('change', '.review-check', function() {
-    let qId = $(this).closest('.question-block').data('question-id');
-    let isReview = $(this).is(':checked');
-    let cId = $(`#q-${qId} input:checked`).val() || null;
-    sendAjax(qId, cId, isReview, true);
-});
-
-$('#prev').click(() => showQuestion(currentQuestionIndex - 1));
-$('#next').click(() => showQuestion(currentQuestionIndex + 1));
-
-function goToReview() {
-    if (mockExamId) window.location.href = '/exam/review/' + mockExamId;
-}
-
-function confirmFinish() {
-    if (confirm("試験を終了して提出しますか？")) $('#finishForm').submit();
+    try {
+        index = parseInt(index);
+        if (index < 0 || index >= questionsCount) return;
+        $('.question-block').addClass('hidden');
+        let target = $('.question-block').eq(index);
+        if(target.length) target.removeClass('hidden');
+        
+        if (window.MathJax) MathJax.typesetPromise();
+        $('#prev').prop('disabled', index === 0);
+        $('#next').prop('disabled', index === questionsCount - 1);
+        $('main').scrollTop(0);
+    } catch (e) { console.error("表示エラー:", e); }
 }
 
 $(document).ready(function() {
-    existingAnswers.forEach(a => {
-        answerStatus[a.questionId] = { answered: !!a.selectedChoiceId, review: a.reviewFlag, choiceId: a.selectedChoiceId };
-        updateStatusUI(a.questionId);
+    // ステータスボタン生成を安全に実行
+    let area = $('#status-scroll-area');
+    questionsData.forEach((q, i) => {
+        area.append(`<div class="q-status-btn" id="status-btn-${i}" onclick="showQuestion(${i})">${i+1}</div>`);
     });
-    setInterval(updateTimer, 1000);
+    
+    $('#prev').click(() => showQuestion(parseInt($('.question-block:not(.hidden)').data('index')) - 1));
+    $('#next').click(() => showQuestion(parseInt($('.question-block:not(.hidden)').data('index')) + 1));
+    
     showQuestion(0);
-    hljs.highlightAll();
+    if(typeof hljs !== 'undefined') hljs.highlightAll();
 });
+
+function confirmFinish() { if (confirm("終了しますか？")) $('#finishForm').submit(); }
 /*]]>*/
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
