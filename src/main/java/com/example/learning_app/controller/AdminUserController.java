@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.example.learning_app.entity.Users;
 import com.example.learning_app.repository.ScoreRepository;
 import com.example.learning_app.repository.UserAnswerRepository;
+import com.example.learning_app.repository.UserMockExamRepository;
 import com.example.learning_app.repository.UsersRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -28,8 +29,7 @@ public class AdminUserController {
     private final PasswordEncoder passwordEncoder;
     private final UserAnswerRepository userAnswerRepository;
     private final ScoreRepository scoreRepository;
-    // 必要に応じて追加
-    // private final UserMockExamRepository userMockExamRepository; 
+    private final UserMockExamRepository userMockExamRepository; 
 
     // 一覧表示
     @GetMapping
@@ -94,8 +94,8 @@ public class AdminUserController {
         // ※Repositoryに deleteByUserId(Long userId) が必要です
         scoreRepository.deleteByUserId(id);
 
-        // 3. (オプション) 模擬試験履歴などがあればそれも削除
-        // userMockExamRepository.deleteByUserId(id);
+        // 3. 模擬試験削除
+        userMockExamRepository.deleteByUserId(id);
 
         // 4. 最後にユーザー本体を削除
         userRepository.delete(user);
