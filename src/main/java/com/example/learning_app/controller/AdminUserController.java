@@ -89,16 +89,19 @@ public class AdminUserController {
         // 1. 模擬試験に紐づく回答履歴を削除
         userAnswerRepository.deleteByUserMockExamUserId(id);
 
-        // 2. 直接紐づく回答履歴があればそれも削除（念のため）
+        // 2. 直接紐づく回答履歴があればそれも削除
         userAnswerRepository.deleteDirectByUserId(id);
 
         // 3. 模擬試験履歴 (user_mock_exams) を削除
         userMockExamRepository.deleteByUserId(id);
 
-        // 4. スコア情報の削除 (scores)
+        // 4. 試験結果 (exam_results) を削除 ★ここを追加
+        examResultRepository.deleteByUserId(id);
+
+        // 5. スコア情報の削除 (scores)
         scoreRepository.deleteByUserId(id);
 
-        // 5. 最後にユーザー本体を削除
+        // 6. 最後にユーザー本体を削除
         userRepository.delete(user);
 
         return "redirect:/admin/users";
