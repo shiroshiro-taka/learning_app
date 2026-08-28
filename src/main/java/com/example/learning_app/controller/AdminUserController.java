@@ -86,8 +86,8 @@ public class AdminUserController {
         Users user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 1. 【最優先】模擬試験に紐づく回答履歴 (user_answers) を削除
-        userAnswerRepository.deleteByUserId(id);
+        // 1. 【子】模擬試験に紐づく回答履歴 (user_answers) を先に削除
+        userAnswerRepository.deleteByUserMockExamUserId(id);
 
         // 2. 模擬試験履歴 (user_mock_exams) を削除
         userMockExamRepository.deleteByUserId(id);
