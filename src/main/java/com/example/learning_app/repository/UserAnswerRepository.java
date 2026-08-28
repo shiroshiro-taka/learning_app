@@ -57,13 +57,16 @@ public interface UserAnswerRepository extends JpaRepository<UserAnswer, Long> {
     @Query("DELETE FROM UserAnswer ua WHERE ua.question.id = :questionId")
     void deleteByQuestionId(@Param("questionId") Long questionId);
     
-    // ★ 1. ユーザーIDに紐づく模擬試験の回答をすべて削除するクエリを追加
     @Modifying
     @Query("DELETE FROM UserAnswer ua WHERE ua.userMockExam.user.id = :userId")
     void deleteByUserMockExamUserId(@Param("userId") Long userId);
 
-    // ★ 2. 既存のメソッドにも @Modifying を付与しておく
     @Modifying
     void deleteByUserId(Long userId);
+
+    // ★ このメソッドを追加する
+    @Modifying
+    @Query("DELETE FROM UserAnswer ua WHERE ua.user.id = :userId")
+    void deleteDirectByUserId(@Param("userId") Long userId);
     
 }
