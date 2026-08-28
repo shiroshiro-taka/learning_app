@@ -38,4 +38,8 @@ public interface UserMockExamRepository extends JpaRepository<UserMockExam, Long
 	@Modifying
 	@Query("DELETE FROM UserMockExam ume WHERE ume.mockExam.id = :mockExamId")
 	void deleteByMockExamId(@Param("mockExamId") Long mockExamId);
+
+	@Modifying
+    @Query("DELETE FROM UserMockExam ume WHERE ume.user.id = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }
