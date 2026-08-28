@@ -79,23 +79,22 @@ public class AdminUserController {
         return "redirect:/admin/users";
     }
 
-    // 削除処理（関連データをすべて消してからユーザーを消す）
+　　// 削除処理（関連データをすべて消してからユーザーを消す）
     @PostMapping("/delete/{id}")
     @Transactional
     public String deleteUser(@PathVariable Long id) {
         Users user = userRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 1. 回答履歴の削除 (user_id で削除)
-        // ※Repositoryに deleteByUserId(Long userId) が必要です
-        userAnswerRepository.deleteByUserId(id);
+        // 1. 【最優先】模擬試験に紐づく回答履歴 (user_answers) を削除
+        // ※user_mock_exam_id を通じて紐づいているため、親（user_mock_exams）を消す前に消す必要がある
+        userAnswerRepository.deleteByUserId(id); // または試験ごとの削除が必要か確認
 
-        // 2. スコア情報の削除
-        // ※Repositoryに deleteByUserId(Long userId) が必要です
-        scoreRepository.deleteByUserId(id);
-
-        // 3. 模擬試験削除
+        // 2. 模擬試験履歴 (user_mock_exams) を削除
         userMockExamRepository.deleteByUserId(id);
+
+        // 3. スコア情報の削除 (scores)
+        scoreRepository.deleteByUserId(id);
 
         // 4. 最後にユーザー本体を削除
         userRepository.delete(user);
