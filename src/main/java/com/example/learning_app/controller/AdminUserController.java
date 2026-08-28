@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.learning_app.entity.Users;
-import com.example.learning_app.repository.ExamResultRepository;
+import com.example.learning_app.repository.ExamResultRepository; // ★インポートを追加
 import com.example.learning_app.repository.ScoreRepository;
 import com.example.learning_app.repository.UserAnswerRepository;
 import com.example.learning_app.repository.UserMockExamRepository;
@@ -30,7 +30,8 @@ public class AdminUserController {
     private final PasswordEncoder passwordEncoder;
     private final UserAnswerRepository userAnswerRepository;
     private final ScoreRepository scoreRepository;
-    private final UserMockExamRepository userMockExamRepository; 
+    private final UserMockExamRepository userMockExamRepository;
+    private final ExamResultRepository examResultRepository; // ★フィールドを追加
 
     // 一覧表示
     @GetMapping
@@ -96,7 +97,7 @@ public class AdminUserController {
         // 3. 模擬試験履歴 (user_mock_exams) を削除
         userMockExamRepository.deleteByUserId(id);
 
-        // 4. 試験結果 (exam_results) を削除 ★ここを追加
+        // 4. 試験結果 (exam_results) を削除
         examResultRepository.deleteByUserId(id);
 
         // 5. スコア情報の削除 (scores)
