@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.learning_app.entity.Users;
+import com.example.learning_app.repository.ExamResultRepository;
 import com.example.learning_app.repository.ScoreRepository;
 import com.example.learning_app.repository.UserAnswerRepository;
 import com.example.learning_app.repository.UserMockExamRepository;
