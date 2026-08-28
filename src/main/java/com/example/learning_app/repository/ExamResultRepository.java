@@ -16,9 +16,14 @@ public interface ExamResultRepository extends JpaRepository<ExamResult, Long> {
      * @param userId ユーザーのID
      * @return ユーザーIDに紐づくExamResultのリスト
      */
-    List<ExamResult> findByUser_IdOrderByFinishedAtDesc(Long userId); // 👈 この行を追加
+    List<ExamResult> findByUser_IdOrderByFinishedAtDesc(Long userId);
     
     @Modifying
     @Query("DELETE FROM ExamResult e WHERE e.mockExam.id = :mockExamId")
     void deleteByMockExamId(@Param("mockExamId") Long mockExamId);
+
+    // ★ ユーザーIDに紐づく試験結果を削除するメソッドを追加
+    @Modifying
+    @Query("DELETE FROM ExamResult e WHERE e.user.id = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }
