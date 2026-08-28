@@ -99,7 +99,7 @@ public class AdminUserController {
         scoreRepository.deleteByUserId(id);
 
         // 5. 最後にユーザー本体を削除
-        userRepository.delete(user);;
+        userRepository.delete(user);
 
         return "redirect:/admin/users";
     }
