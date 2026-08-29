@@ -1,0 +1,20 @@
+/* テーブルのレイアウト調整 */
+.table-layout-fixed {
+    table-layout: fixed;
+}
+/* テーブルの列幅指定 */
+.col-id { width: 8%; }
+.col-exam-name { width: 22%; }
+.col-q-count { width: 10%; }
+.col-duration { width: 12%; }
+.col-description { width: 38%; }
+.col-actions { width: 10%; }
+
+/* 詳細文が長すぎる場合の表示制御 */
+.clamp-text {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 2行に制限 */
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+}
