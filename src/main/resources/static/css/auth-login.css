@@ -96,3 +96,25 @@ footer {
 
 /* highlight.js調整 */
 .hljs { font-size: 13px; border-radius: 8px; }
+
+.preserve-format { white-space: pre-wrap; }
+.hljs {
+    padding: 0.5em;
+    background: #f3f3f3;
+    border-radius: 0.5rem;
+    line-height: 1.4;
+}
+.choice-container {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+.choice-radio {
+    margin-right: 1rem;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+}
+.choice-code-wrapper {
+    flex-grow: 1;
+    overflow-x: auto;
+}
