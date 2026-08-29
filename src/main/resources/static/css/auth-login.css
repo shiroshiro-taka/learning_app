@@ -157,3 +157,61 @@ footer {
     font-size: 0.8em;
     margin-left: 0.3em;
 }
+
+:root {
+    --calendar-border: #e0e0e0;
+    --today-border: #228be6;
+    --selected-border: #ff922b;
+    --sunday-color: #fa5252;
+    --saturday-color: #4dabf7;
+    --level-0: #ffffff;
+    --level-1: #ebedf0;
+    --level-2: #9be9a8;
+    --level-3: #40c463;
+    --level-4: #216e39;
+}
+body { background-color: #f8f9fa; font-family: 'Helvetica Neue', Arial, sans-serif; }
+.calendar-card { border: none; border-radius: 15px; overflow: hidden; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); background-color: white; }
+.calendar-header-cell { text-align: center; padding: 12px; font-weight: bold; background-color: #f1f3f5; border-bottom: 2px solid var(--calendar-border); }
+.calendar-day-cell { min-height: 100px; padding: 8px; border-right: 1px solid var(--calendar-border); border-bottom: 1px solid var(--calendar-border); transition: all 0.2s; cursor: pointer; position: relative; }
+.calendar-day-cell:hover { filter: brightness(0.95); z-index: 1; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+
+.level-0 { background-color: var(--level-0) !important; }
+.level-1 { background-color: var(--level-1) !important; border: 1px solid #d1d5da; }
+.level-2 { background-color: var(--level-2) !important; }
+.level-3 { background-color: var(--level-3) !important; }
+.level-4 { background-color: var(--level-4) !important; }
+
+.legend-item { display: flex; align-items: center; font-size: 0.75rem; color: #6c757d; margin-left: 8px; }
+.legend-color { width: 12px; height: 12px; border-radius: 2px; margin-right: 4px; border: 1px solid rgba(0,0,0,0.05); }
+
+.is-today { 
+    box-shadow: inset 0 0 0 3px var(--today-border) !important; 
+    z-index: 2; 
+}
+.is-today .day-num { 
+    background-color: var(--today-border); 
+    color: white !important; 
+}
+
+.selected-day { 
+    outline: 4px solid var(--selected-border) !important; 
+    outline-offset: -4px;
+    z-index: 10 !important;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2) !important;
+}
+
+.day-num { font-weight: 600; font-size: 0.95rem; margin-bottom: 4px; display: inline-block; width: 24px; height: 24px; text-align: center; line-height: 24px; border-radius: 50%; }
+.prev-month-day { color: #ced4da; background-color: #f8f9fa !important; cursor: default; }
+
+.study-log { font-size: 0.7rem; padding: 2px 4px; border-radius: 4px; background-color: rgba(255, 255, 255, 0.8); color: #495057; margin-top: 4px; display: inline-block; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+.level-3 .study-log, .level-4 .study-log { color: #fff; background-color: rgba(0,0,0,0.2); }
+
+.sun { color: var(--sunday-color); }
+.sat { color: var(--saturday-color); }
+
+#detail-area { transition: opacity 0.4s ease-out, transform 0.4s ease-out; margin-top: 2rem; transform: translateY(15px); opacity: 0; }
+#detail-area.show { opacity: 1; transform: translateY(0); }
+.badge-pass { background-color: #0d6efd; color: white; }
+.badge-fail { background-color: #dc3545; color: white; }
