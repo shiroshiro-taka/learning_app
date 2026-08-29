@@ -17,3 +17,82 @@
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
     border-left: 6px solid #facc15; /* accent-yellow */
 }
+/* 画面全体の固定設定 */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #f3f4f6; /* gray-100 */
+}
+
+body { 
+    display: flex;
+    flex-direction: column;
+}
+
+/* ヘッダーの高さ抑制 */
+header {
+    height: 50px;
+    flex-shrink: 0;
+}
+
+/* メインコンテンツエリア */
+main {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 20px;
+}
+
+/* フッター：スマホでの占有面積を最小限に */
+footer {
+    flex-shrink: 0;
+    z-index: 50;
+}
+
+.preserve-format {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* 解答状況ボタンのコンテナ：スマホでは1行程度に制限しスクロール */
+#status-scroll-area {
+    max-height: 44px; /* 1行分強 */
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+}
+
+.q-status-btn {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: white;
+    background-color: #4b5563; /* gray-600 */
+    cursor: pointer;
+}
+
+.status-current { background-color: #facc15 !important; color: #1f2937 !important; border: 2px solid #1f2937; }
+.status-answered { background-color: #10b981 !important; }
+.status-review::after { content: "📌"; position: absolute; top: -4px; right: -4px; font-size: 10px; }
+
+.choice-item {
+    transition: all 0.1s ease;
+    border: 2px solid #e5e7eb;
+}
+.selected-choice {
+    background-color: #eff6ff;
+    border-color: #3b82f6 !important;
+}
+
+/* highlight.js調整 */
+.hljs { font-size: 13px; border-radius: 8px; }
