@@ -5,23 +5,7 @@
     <title>ホーム - 学習支援システム</title>
     <!-- Tailwind CSS CDNを読み込み -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Tailwindのカスタム設定
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-blue': '#1c55c8',
-                        'primary-blue-hover': '#1747a5',
-                        'accent-green': '#10b981',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+     <script th:src="@{/js/tailwind-config.js}"></script>
 	<style>
 	    .preserve-format {
 	        white-space: pre-wrap;
