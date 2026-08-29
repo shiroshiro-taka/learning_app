@@ -215,3 +215,10 @@ body { background-color: #f8f9fa; font-family: 'Helvetica Neue', Arial, sans-ser
 #detail-area.show { opacity: 1; transform: translateY(0); }
 .badge-pass { background-color: #0d6efd; color: white; }
 .badge-fail { background-color: #dc3545; color: white; }
+
+/* 苦手問題一覧などの通常スクロールが必要なページに向けた上書き・調整用 */
+body.scrollable-page html,
+body.scrollable-page body {
+    height: auto !important;
+    overflow: auto !important;
+}
