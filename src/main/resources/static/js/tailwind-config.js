@@ -7,6 +7,7 @@ tailwind.config = {
                 'primary-blue-hover': '#1747a5',
                 'success-green': '#10b981', // 保存ボタンの緑
                 'gray-button': '#6b7280',   // 戻るボタンの灰色
+                'error-red': '#ef4444',   // ★ 追加
             },
             fontFamily: {
                 sans: ['Inter', 'sans-serif'],
