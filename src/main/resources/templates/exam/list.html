@@ -6,22 +6,8 @@
     <title>模擬試験選択 - 学習支援システム</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-blue': '#1c55c8',
-                        'primary-blue-hover': '#1747a5',
-                        'accent-orange': '#f97316',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <!-- 共通のTailwindカスタム設定を読み込み -->
+    <script th:src="@{/js/tailwind-config.js}"></script>
 </head>
 <body class="bg-gray-50 font-sans p-4 sm:p-8">
 
