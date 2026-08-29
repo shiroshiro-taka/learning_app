@@ -1,0 +1,10 @@
+/* テキストエリアのサイズ調整 */
+.input-text-area {
+    min-height: 100px; /* 問題文 */
+}
+.choice-text-area {
+    min-height: 50px; /* 選択肢 */
+}
+.explanation-text-area {
+    min-height: 400px; /* 解説 */
+}
