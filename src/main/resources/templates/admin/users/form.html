@@ -6,24 +6,8 @@
     <title th:text="${user.id != null} ? 'ユーザー編集' : '新規ユーザー登録'">ユーザー登録・編集</title>
     <!-- Tailwind CSS CDNを読み込み -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Tailwindのカスタム設定 (他の画面と共通化)
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
-                        'primary-blue-hover': '#1747a5',
-                        'success-green': '#10b981', // 保存ボタンの緑
-                        'gray-button': '#6b7280',   // 戻るボタンの灰色
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <!-- 共通のTailwindカスタム設定を読み込み -->
+    <script th:src="@{/js/tailwind-config.js}"></script>
 </head>
 <body class="bg-gray-50 min-h-screen p-4 md:p-8 flex items-start justify-center">
 
