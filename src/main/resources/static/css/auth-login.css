@@ -118,3 +118,16 @@ footer {
     flex-grow: 1;
     overflow-x: auto;
 }
+
+.preserve-format { white-space: pre-wrap; }
+.hljs { padding: 0.75em; background: #f3f3f3; border-radius: 0.5rem; line-height: 1.4; overflow-x: auto; }
+@media (min-width: 1024px) {
+    .equal-height-container { align-items: stretch; }
+    .left, .right { display: flex; flex-direction: column; height: 100%; }
+    .right-content { flex-grow: 1; overflow-y: auto; }
+}
+/* MathJaxの表示を少し整える設定 */
+.mjx-container {
+    font-size: 1.1em !important;
+    margin: 0.5em 0;
+}
