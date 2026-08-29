@@ -4,37 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ユーザー管理</title>
+    <!-- Tailwind CSS CDNを読み込み -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Tailwindのカスタム設定 (他の画面と共通化)
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
-                        'primary-blue-hover': '#1747a5',
-                        'success-green': '#10b981', // 新規登録ボタンの緑
-                        'error-red': '#ef4444',     // 削除ボタンの赤
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
-    <style>
-        /* テーブルのレイアウト調整 */
-        .table-layout-fixed {
-            table-layout: fixed;
-        }
-        /* テーブルの列幅指定 */
-        .col-id { width: 8%; }
-        .col-username { width: 27%; }
-        .col-role { width: 15%; }
-        .col-created-at { width: 25%; }
-        .col-actions { width: 25%; }
-    </style>
+    <!-- 共通のTailwindカスタム設定を読み込み -->
+    <script th:src="@{/js/tailwind-config.js}"></script>
+    <!-- 外部CSSの読み込み -->
+    <link rel="stylesheet" th:href="@{/css/admin-users-index.css}">
 </head>
 <body class="bg-gray-50 min-h-screen p-4 md:p-8 flex flex-col">
 
@@ -87,7 +62,7 @@
                                 
                                 <form th:action="@{|/admin/users/delete/${user.id}|}" method="post" class="inline"
                                       th:data-username="${user.username}"
-                                      onsubmit="return confirm('⚠️ ユーザー「' + this.getAttribute('data-username') + '」を削除しますか？\n\nこの操作は取り消せません。\nこのユーザーに関連する「すべての解答履歴」と「スコア」も完全に削除されます。\n\n本当によろしいですか？');">
+                                      onsubmit="return confirm('⚠️ ユーザー「' + this.getAttribute('data-username') + '」を削除しますか？\n\nこの操作は取り消せません。\nこのユーザーに関連するすべての解答履歴とスコアも完全に削除されます。\n\n本当によろしいですか？');">
                                     <button type="submit" 
                                             class="text-error-red hover:text-red-700 transition duration-150 font-semibold">
                                         削除
