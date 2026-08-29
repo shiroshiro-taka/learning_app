@@ -6,33 +6,10 @@
 <title>解答見直し: [[${exam.examName}]]</title>
 <!-- Tailwind CSS CDNを読み込み -->
 <script src="https://cdn.tailwindcss.com"></script>
-<script>
-    // Tailwindのカスタム設定 (試験画面と共通化)
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    'primary-blue': '#1c55c8', // ボタンやアクセント用の青
-                    'primary-blue-hover': '#1747a5',
-                    'success-green': '#10b981', // 解答済みの緑
-                    'error-red': '#ef4444',     // 未解答の赤
-                    'accent-yellow': '#facc15', // 見直しフラグの黄色
-                    'dark-panel': '#2d3748',    // コントロールパネルの背景
-                },
-                fontFamily: {
-                    sans: ['Inter', 'sans-serif'],
-                },
-            }
-        }
-    }
-</script>
-<style>
-  /* 見直しフラグ付きのカードを強調するためのスタイル */
-  .review-flag-on {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-    border-left: 6px solid #facc15; /* accent-yellow */
-  }
-</style>
+<!-- 共通のTailwindカスタム設定を読み込み -->
+<script th:src="@{/js/tailwind-config.js}"></script>
+<!-- 外部CSSの読み込み -->
+<link rel="stylesheet" th:href="@{/css/auth-login.css}">
 </head>
 <body class="bg-gray-50 min-h-screen">
 
