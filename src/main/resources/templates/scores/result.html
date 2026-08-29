@@ -5,23 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>学習進捗・成績確認 - 学習支援システム</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-blue': '#1c55c8',
-                        'primary-blue-hover': '#1747a5',
-                        'success-green': '#10b981',
-                        'error-red': '#ef4444',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+     <script th:src="@{/js/tailwind-config.js}"></script>
 </head>
 <body class="bg-gray-50 font-sans p-4 sm:p-8">
 
