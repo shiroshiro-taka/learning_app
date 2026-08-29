@@ -4,42 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>結果 - 学習支援システム</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    'primary-blue': '#1c55c8',
-                    'primary-blue-hover': '#1747a5',
-                    'success-green': '#10b981',
-                    'error-red': '#ef4444',
-                    'accent-orange': '#f59e0b',
-                },
-                fontFamily: { sans: ['Inter', 'sans-serif'] },
-            }
-        }
-    }
-  </script>
+  <!-- 共通のTailwindカスタム設定を読み込み -->
+  <script th:src="@{/js/tailwind-config.js}"></script>
+  <!-- 外部CSSの読み込み -->
+  <link rel="stylesheet" th:href="@{/css/auth-login.css}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
   
   <!-- ▼ 数式表示（MathJax）のためのスクリプトを追加 -->
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-  
-  <style>
-    .preserve-format { white-space: pre-wrap; }
-    .hljs { padding: 0.75em; background: #f3f3f3; border-radius: 0.5rem; line-height: 1.4; overflow-x: auto; }
-    @media (min-width: 1024px) {
-        .equal-height-container { align-items: stretch; }
-        .left, .right { display: flex; flex-direction: column; height: 100%; }
-        .right-content { flex-grow: 1; overflow-y: auto; }
-    }
-    /* MathJaxの表示を少し整える設定 */
-    .mjx-container {
-        font-size: 1.1em !important;
-        margin: 0.5em 0;
-    }
-  </style>
 </head>
 <body class="bg-gray-50 font-sans p-4 sm:p-8">
 
