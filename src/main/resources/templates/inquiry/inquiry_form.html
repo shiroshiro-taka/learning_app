@@ -68,13 +68,14 @@
                     <option value="その他">その他</option>
                 </select>
             </div>
-      
+    
             <!-- 返信希望 -->
             <div>
                 <p class="block text-sm font-medium text-gray-700 mb-1">返信希望：</p>
                 <div class="mt-2 flex items-center space-x-6">
                     <label class="inline-flex items-center">
-                        <input type="repo" id="replyYes" name="replyWanted" th:field="*{replyWanted}" value="true" onchange="toggleEmailRequired()"
+                        <!-- 【修正】type="repo" を type="radio" に修正 -->
+                        <input type="radio" id="replyYes" name="replyWanted" th:field="*{replyWanted}" value="true" onchange="toggleEmailRequired()"
                                class="h-4 w-4 text-primary-blue border-gray-300 focus:ring-primary-blue">
                         <span class="ml-2 text-sm text-gray-700">する</span>
                     </label>
