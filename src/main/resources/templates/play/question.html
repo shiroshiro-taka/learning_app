@@ -4,50 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>問題演習 - 学習支援システム</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-blue': '#1c55c8',
-                        'primary-blue-hover': '#1747a5',
-                        'accent-green': '#10b981',
-                        'accent-orange': '#f59e0b',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
-	<style>
-	    .preserve-format { white-space: pre-wrap; }
-	    .hljs {
-	        padding: 0.5em;
-	        background: #f3f3f3;
-            border-radius: 0.5rem;
-            line-height: 1.4;
-	    }
-	    .choice-container {
-	        display: flex;
-	        align-items: flex-start;
-	        margin-bottom: 1rem;
-	    }
-	    .choice-radio {
-	        margin-right: 1rem;
-	        margin-top: 0.25rem;
-	        flex-shrink: 0;
-	    }
-	    .choice-code-wrapper {
-	        flex-grow: 1;
-	        overflow-x: auto;
-	    }
-	</style>
-	
-	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- 共通のTailwindカスタム設定を読み込み -->
+    <script th:src="@{/js/tailwind-config.js}"></script>
+    <!-- 外部CSSの読み込み -->
+    <link rel="stylesheet" th:href="@{/css/auth-login.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body class="bg-gray-50 font-sans p-4 sm:p-8">
 
@@ -76,7 +40,7 @@
                 </p>
             </div>
         </div>
-	
+    
         <!-- 問題文 -->
         <section class="question-text mb-8">
             <h3 class="text-xl md:text-2xl font-bold text-gray-900 preserve-format" th:utext="${question.questionText}"></h3>
@@ -88,7 +52,7 @@
             <input type="hidden" name="questionId" th:value="${question.id}">
             <input type="hidden" name="categoryId" th:value="${categoryId}">
             <input type="hidden" name="currentIndex" th:value="${currentIndex}">
-	        <input type="hidden" name="isRandom" th:value="${isRandom}">
+            <input type="hidden" name="isRandom" th:value="${isRandom}">
             <!-- 苦手問題フラグを保持 -->
             <input type="hidden" name="isWeak" th:value="${isWeak}">
 
@@ -105,7 +69,7 @@
                     </div>
                 </div>
             </div>
-	
+    
             <!-- 回答ボタン -->
             <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-lg font-medium text-white bg-primary-blue hover:bg-primary-blue-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue transition duration-150 ease-in-out mt-8">
                 回答する
