@@ -29,7 +29,7 @@ public class InquiryController {
         Inquiry inquiry = new Inquiry();
         inquiry.setUsername(user.getUsername());
         model.addAttribute("inquiry", inquiry);
-        return "inquiry_form";
+        return "inquiry/inquiry_form";
     }
 
     @PostMapping("/submit")
@@ -48,11 +48,11 @@ public class InquiryController {
         
         // 3. 全体のバリデーションエラー確認
         if (result.hasErrors()) {
-            return "inquiry_form";
+            return "inquiry/inquiry_form";
         }
         
         inquiryRepository.save(inquiry);
         model.addAttribute("message", "お問い合わせを送信しました。");
-        return "inquiry_result";
+        return "inquiry/inquiry_result";
     }
 }
