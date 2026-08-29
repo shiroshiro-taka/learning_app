@@ -1,0 +1,10 @@
+/* テーブルのレイアウト調整 */
+.table-layout-fixed {
+    table-layout: fixed;
+}
+/* テーブルの列幅指定 */
+.col-id { width: 8%; }
+.col-username { width: 27%; }
+.col-role { width: 15%; }
+.col-created-at { width: 25%; }
+.col-actions { width: 25%; }
