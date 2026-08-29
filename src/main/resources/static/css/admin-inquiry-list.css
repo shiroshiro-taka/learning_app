@@ -1,0 +1,16 @@
+/* テーブルの列幅の柔軟な制御と、内容の表示制限 */
+.clamp-text {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 2行に制限 */
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+}
+/* 列幅のヒント (横スクロール前提) */
+.col-id { width: 50px; }
+.col-username { width: 100px; }
+.col-email { width: 150px; }
+.col-reply { width: 80px; }
+.col-category { width: 100px; }
+.col-message { min-width: 300px; max-width: 400px; }
+.col-date { width: 150px; }
