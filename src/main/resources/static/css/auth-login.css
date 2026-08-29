@@ -12,3 +12,8 @@
     border: 2px solid #ef4444;
     background-color: #fef2f2;
 }
+/* 見直しフラグ付きのカードを強調するためのスタイル */
+.review-flag-on {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+    border-left: 6px solid #facc15; /* accent-yellow */
+}
