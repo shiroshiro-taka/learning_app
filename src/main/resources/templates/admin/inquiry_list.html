@@ -6,40 +6,10 @@
     <title>お問い合わせ一覧 (管理)</title>
     <!-- Tailwind CSS CDNを読み込み -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Tailwindのカスタム設定 (他の画面と共通化)
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
-                        'primary-blue-hover': '#1747a5',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
-    <style>
-        /* テーブルの列幅の柔軟な制御と、内容の表示制限 */
-        .clamp-text {
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2; /* 2行に制限 */
-            -webkit-box-orient: vertical;
-            word-break: break-word;
-        }
-        /* 列幅のヒント (横スクロール前提) */
-        .col-id { width: 50px; }
-        .col-username { width: 100px; }
-        .col-email { width: 150px; }
-        .col-reply { width: 80px; }
-        .col-category { width: 100px; }
-        .col-message { min-width: 300px; max-width: 400px; }
-        .col-date { width: 150px; }
-    </style>
+    <!-- 共通のTailwindカスタム設定を読み込み -->
+    <script th:src="@{/js/tailwind-config.js}"></script>
+    <!-- 外部CSSの読み込み -->
+    <link rel="stylesheet" th:href="@{/css/admin-inquiry-list.css}">
 </head>
 <body class="bg-gray-50 min-h-screen p-4 md:p-8">
 
