@@ -20,7 +20,6 @@
         <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 border-b-2 border-error-red pb-2 inline-block">
             苦手問題一覧（正答率 60%以下）
         </h2>
-        <p class="mt-4 text-base md:text-lg text-gray-600">集中して再挑戦すべき問題が表示されています。</p>
     </header>
 
     <!-- 1. モバイル用レイアウト (md未満で表示) -->
@@ -94,9 +93,6 @@
             </tbody>
         </table>
         
-        <div th:if="${#lists.isEmpty(weakQuestions)}" class="text-center p-12 bg-white text-gray-600 font-bold">
-            現在、苦手と判定された問題はありません。素晴らしいです！
-        </div>
     </div>
 
     <div class="mt-8 text-center pt-6 border-t border-gray-200">
