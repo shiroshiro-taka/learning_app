@@ -140,3 +140,20 @@ footer {
     transform: translateY(-3px);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
+
+/* ソートヘッダーのスタイル（PC版テーブル用） */
+#weakTable th {
+    cursor: pointer;
+    transition: background-color 0.2s;
+    position: relative;
+}
+#weakTable th:hover {
+    background-color: #e5e7eb;
+}
+#weakTable th.sort-asc::after { content: " ▲"; color: #1c55c8; }
+#weakTable th.sort-desc::after { content: " ▼"; color: #1c55c8; }
+#weakTable th.sort-asc::after,
+#weakTable th.sort-desc::after {
+    font-size: 0.8em;
+    margin-left: 0.3em;
+}
