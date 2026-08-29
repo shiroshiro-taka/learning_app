@@ -1,0 +1,21 @@
+/* 問題文・正答のプリフォーマットを維持し、はみ出しを防ぐ */
+.pre-wrap-clamp {
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* 3行に制限 */
+    -webkit-box-orient: vertical;
+    font-size: 0.875rem; /* text-sm */
+    color: #4b5563; /* gray-600 */
+}
+/* テーブルのレイアウト調整 */
+.table-layout-fixed {
+    table-layout: fixed;
+}
+/* テーブルの列幅指定（Tailwindのスタイルを上書きまたは補完） */
+.col-id { width: 5%; }
+.col-question { width: 45%; } /* 問題文の幅を確保 */
+.col-category { width: 15%; }
+.col-answer { width: 20%; }
+.col-actions { width: 15%; }
