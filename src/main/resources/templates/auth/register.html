@@ -1,32 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新規登録 - 学習支援システム</title>
     <!-- Tailwind CSS CDNを読み込み -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Tailwindのカスタム設定（主要な青色を定義）
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-blue': '#1c55c8', // ボタンやアクセント用の青
-                        'primary-blue-hover': '#1747a5',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
-    <style>
-        /* フォームグループの間隔を調整するためのカスタムスタイル */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-    </style>
+    <!-- 共通のTailwindカスタム設定を読み込み -->
+    <script th:src="@{/js/tailwind-config.js}"></script>
+    <!-- 外部CSSの読み込み -->
+    <link rel="stylesheet" th:href="@{/css/auth-login.css}">
 </head>
 <!-- 画面中央にコンテンツを配置し、背景色を設定 -->
 <body class="bg-gray-100 flex items-center justify-center p-4 min-h-screen">
