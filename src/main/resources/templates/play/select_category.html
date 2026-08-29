@@ -4,34 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>出題分野を選択 - 学習支援システム</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Tailwindのカスタム設定
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-blue': '#1c55c8',
-                        'primary-blue-hover': '#1747a5',
-                        'accent-green': '#10b981',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
-    <style>
-        /* 選択肢カードのホバー効果 */
-        .category-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .category-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-    </style>
+    <!-- 共通のTailwindカスタム設定を読み込み -->
+    <script th:src="@{/js/tailwind-config.js}"></script>
+    <!-- 外部CSSの読み込み -->
+    <link rel="stylesheet" th:href="@{/css/auth-login.css}">
 </head>
 <body class="bg-gray-50 font-sans p-4 sm:p-8">
     
