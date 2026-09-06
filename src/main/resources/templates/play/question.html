@@ -88,16 +88,9 @@
         </div>
     </div>
 
+<!-- 外部ライブラリおよびカスタムJavaScriptの読み込み -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
-<script>
-    hljs.highlightAll();
-    document.querySelectorAll('.choice-container').forEach(container => {
-        container.addEventListener('click', function() {
-            const radio = this.querySelector('input[type="radio"]');
-            if (radio) { radio.checked = true; }
-        });
-    });
-</script>
+<script th:src="@{/js/question-play.js}" defer></script>
 </body>
 </html>
