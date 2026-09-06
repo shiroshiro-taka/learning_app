@@ -66,12 +66,12 @@
         <table id="weakTable" class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-100">
                 <tr>
-                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">問題番号</th>
-                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">分野</th>
-                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">回答数</th>
-                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">正答数</th>
-                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">誤答数</th>
-                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">正答率</th>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center cursor-pointer hover:bg-gray-200">問題番号</th>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center cursor-pointer hover:bg-gray-200">分野</th>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center cursor-pointer hover:bg-gray-200">回答数</th>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center cursor-pointer hover:bg-gray-200">正答数</th>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center cursor-pointer hover:bg-gray-200">誤答数</th>
+                    <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center cursor-pointer hover:bg-gray-200">正答率</th>
                     <th class="px-4 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-center">操作</th>
                 </tr>
             </thead>
@@ -103,52 +103,7 @@
 
 </div>
 
-<script>
-$(document).ready(function() {
-    let sortDirection = {};
-
-    function sortTable(colIndex) {
-        const table = $("#weakTable");
-        const tbody = table.find("tbody");
-        const rows = tbody.find("tr").toArray();
-        if (rows.length === 0) return;
-
-        const asc = !sortDirection[colIndex];
-        sortDirection[colIndex] = asc;
-
-        table.find("th").removeClass("sort-asc sort-desc");
-        table.find("th").eq(colIndex).addClass(asc ? "sort-asc" : "sort-desc");
-
-        rows.sort((a, b) => {
-            let A = $(a).find("td").eq(colIndex).text().replace('%','').trim();
-            let B = $(b).find("td").eq(colIndex).text().replace('%','').trim();
-
-            const isNumeric = colIndex !== 1 && colIndex !== 6;
-            if (isNumeric) {
-                A = parseFloat(A) || 0;
-                B = parseFloat(B) || 0;
-            }
-
-            if (A < B) return asc ? -1 : 1;
-            if (A > B) return asc ? 1 : -1;
-            return 0;
-        });
-
-        $.each(rows, function(_, row) {
-            tbody.append(row);
-        });
-    }
-
-    $("#weakTable th").on("click", function() {
-        const index = $(this).index();
-        if (index < 6) sortTable(index);
-    });
-
-    if ($("#weakTable tbody tr").length > 0) {
-        sortTable(0);
-    }
-});
-</script>
-
+<!-- 外部JavaScriptファイルの読み込み -->
+<script th:src="@{/js/weak-list.js}" defer></script>
 </body>
 </html>
