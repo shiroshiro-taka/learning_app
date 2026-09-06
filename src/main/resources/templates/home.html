@@ -5,19 +5,10 @@
     <title>ホーム - 学習支援システム</title>
     <!-- Tailwind CSS CDNを読み込み -->
     <script src="https://cdn.tailwindcss.com"></script>
-     <script th:src="@{/js/tailwind-config.js}"></script>
-	<style>
-	    .preserve-format {
-	        white-space: pre-wrap;
-	    }
-	    .menu-link-card {
-	        transition: transform 0.2s, box-shadow 0.2s;
-	    }
-	    .menu-link-card:hover {
-	        transform: translateY(-3px);
-	        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-	    }
-	</style>
+    <script th:src="@{/js/tailwind-config.js}"></script>
+    <!-- 外部CSSの読み込み -->
+    <link rel="stylesheet" th:href="@{/css/auth-login.css}">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
 </head>
 <body class="bg-gray-50 font-sans">
     
@@ -32,8 +23,8 @@
 			<div class="flex items-center space-x-2 sm:space-x-4 shrink-0">
 				<!-- 学習カレンダーボタン（スマホではアイコンのみ、PCではテキストあり） -->
 				<a th:href="@{/scores/calendar}" 
-				     class="inline-flex items-center justify-center p-2 sm:px-3 sm:py-2 text-sm font-medium rounded-lg text-primary-blue border border-primary-blue hover:bg-blue-50 transition duration-150 shadow-sm"
-                     title="学習カレンダー">
+				   class="inline-flex items-center justify-center p-2 sm:px-3 sm:py-2 text-sm font-medium rounded-lg text-primary-blue border border-primary-blue hover:bg-blue-50 transition duration-150 shadow-sm"
+                   title="学習カレンダー">
 					 <!-- アイコンが消えないよう、style属性で強制的に色を指定 -->
 					 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-5 sm:w-5 sm:mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="stroke: #1c55c8; display: block;">
 					    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -119,7 +110,6 @@
                 </a>
             </div>
         </section>
-
 
         <!-- 管理者メニュー -->
         <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}" class="mt-12 pt-6 border-t-2 border-gray-200">
